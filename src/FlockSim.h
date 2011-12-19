@@ -49,8 +49,6 @@ class FlockSim
   CudaSpec cusp;
     
  public:
-  
-  FlockSim();
   FlockSim(int size,float wall_size);
   virtual ~FlockSim()
   {
@@ -58,6 +56,7 @@ class FlockSim
     free(F.flock);
   };
   void printFlock();
+  void copy2host();
   void update_flock (float dt);  
   /* data type */
   Flock F;
