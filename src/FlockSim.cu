@@ -31,7 +31,8 @@ void FlockSim::initialFlock(int size)
   {
     F.flock[i].angle = (float)rand()/(float)RAND_MAX*360.0;
     F.flock[i].x = (float)rand()/(float)RAND_MAX*wallx;
-    F.flock[i].y = (float)rand()/(float)RAND_MAX*wally;        
+    F.flock[i].y = (float)rand()/(float)RAND_MAX*wally;
+    F.flock[i].v = (float)rand()/(float)RAND_MAX; // 0~1
   }
 }
 
