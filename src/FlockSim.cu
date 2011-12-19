@@ -8,6 +8,12 @@
 //#define NDEBUG
 using namespace std;
 
+FlockSim::FlockSim(){
+  
+
+}
+
+
 FlockSim::FlockSim(int size,float wall_size)
 {
   wallx = wall_size;
@@ -69,22 +75,22 @@ void FlockSim::initialFlock(int size)
 void FlockSim::printFlock()
 {
   cudaMemcpy(F.flock,dev_flock,F.size*sizeof(Agent),cudaMemcpyDeviceToHost);  
-  cout  <<setw(8)<< "n"\
+//  cout  <<setw(8)<< "n"\
         <<setw(8) << "ang"\
         <<setw(8) << "x"\
         <<setw(8) << "y"\
         <<setw(8) << "v"\    
-        << endl;
-  for (int i = 0; i < F.size; ++i)
-  {
-    cout << setw(8) << i\
+//        << endl;
+//  for (int i = 0; i < F.size; ++i)
+//  {
+//    cout << setw(8) << i\
          <<setw(8) <<(int) F.flock[i].angle             \
          <<setw(8) << setprecision(2)<< F.flock[i].x    \
          <<setw(8) << F.flock[i].y                      \
          <<setw(8) << F.flock[i].v                      \      
-         <<endl;
-  }
-  cout << endl;
+ //        <<endl;
+ // }
+//  cout << endl;
 }
 
 

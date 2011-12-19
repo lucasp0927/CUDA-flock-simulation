@@ -44,11 +44,13 @@ class FlockSim
   //  __global__ void update_flock_gpu (Agent* dev_flock, float wallx,float wally,int size,float dt);
   void initialFlock(int size);
   /* data member */
-  Flock F;
+//  Flock F;
   float wallx,wally;
   CudaSpec cusp;
     
  public:
+  
+  FlockSim();
   FlockSim(int size,float wall_size);
   virtual ~FlockSim()
   {
@@ -58,6 +60,7 @@ class FlockSim
   void printFlock();
   void update_flock (float dt);  
   /* data type */
+  Flock F;
   Agent* dev_flock;
 };
   
