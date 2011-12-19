@@ -13,12 +13,42 @@ FlockSim::FlockSim(int size,float wall_size)
   wallx = wall_size;
   wally = wall_size;    
   initialFlock(size);
+  cudaMalloc((void**)&dev_flock,F.size*sizeof(Agent));
+  cudaMemcpy(dev_flock, F.flock, F.size*sizeof(Agent),cudaMemcpyHostToDevice);  
 }
-
-__global__ void update_flock ()
+__device__ float check_angle (float ang)
 {
+  if (ang >= (float)360)
+    return ang - (float) 360;
+  if (ang < 0)
+    return ang + (float) 360;
+  else
+    return ang;
 }
 
+__global__ void update_flock_gpu (Agent* F, float wallx,float wally,int size,float dt)
+{
+  int num = threadIdx.x + blockDim.x * blockIdx.y;
+  if (num < size)
+  {
+    F[num].x += cos(F[num].v)*dt;
+    F[num].y += sin(F[num].v)*dt;
+    if (F[num].x >= wallx || F[num].x <= (float)0.0)
+      F[num].angle = ((float)180.0 - F[num].angle);
+    if (F[num].y >= wally || F[num].y <= (float)0.0)
+      F[num].angle =  (-(float)1.0* F[num].angle);
+    check_angle(F[num].angle);
+  }
+}
+
+
+
+void FlockSim::update_flock(float dt)
+{
+  update_flock_gpu<<<cusp.Grid,cusp.Block>>>(dev_flock,wallx,wally,F.size,dt);
+}
+
+  
 void FlockSim::initialFlock(int size)
 {
   /*
@@ -38,10 +68,12 @@ void FlockSim::initialFlock(int size)
 
 void FlockSim::printFlock()
 {
+  cudaMemcpy(F.flock,dev_flock,F.size*sizeof(Agent),cudaMemcpyDeviceToHost);  
   cout  <<setw(8)<< "n"\
         <<setw(8) << "ang"\
         <<setw(8) << "x"\
         <<setw(8) << "y"\
+        <<setw(8) << "v"\    
         << endl;
   for (int i = 0; i < F.size; ++i)
   {
@@ -49,8 +81,10 @@ void FlockSim::printFlock()
          <<setw(8) <<(int) F.flock[i].angle             \
          <<setw(8) << setprecision(2)<< F.flock[i].x    \
          <<setw(8) << F.flock[i].y                      \
+         <<setw(8) << F.flock[i].v                      \      
          <<endl;
   }
+  cout << endl;
 }
 
 

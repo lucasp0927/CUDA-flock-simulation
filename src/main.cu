@@ -15,6 +15,7 @@ int main(int argc, char *argv[])
   cout << "Simulate a flock with " << flock_size << " agents." << endl;
   FlockSim Fsim(flock_size,wall_size);
   Fsim.printFlock();
-  
+  Fsim.update_flock(100.0);     // big dt for testing
+  Fsim.printFlock();
   return 0;
 }

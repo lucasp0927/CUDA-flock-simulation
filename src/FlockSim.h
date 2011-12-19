@@ -3,6 +3,8 @@
 
 #include<cuda.h>
 
+using namespace std;
+
 typedef struct
 {
   float angle; //360
@@ -25,8 +27,13 @@ class CudaSpec
   
   CudaSpec()
   {
+    Block_Dim_x = 512;
+    Block_Dim_y = 1;  
+    Grid_Dim_x = 100;
+    Grid_Dim_y = 1;
+    dim3 Grid(Grid_Dim_x, Grid_Dim_y);		//Grid structure
+    dim3 Block(Block_Dim_x,Block_Dim_y);	//Block structure, threads/block limited by specific device      
   }
-  
 };
 
 
@@ -34,17 +41,24 @@ class CudaSpec
 class FlockSim
 {
  private:
+  //  __global__ void update_flock_gpu (Agent* dev_flock, float wallx,float wally,int size,float dt);
+  void initialFlock(int size);
+  /* data member */
   Flock F;
   float wallx,wally;
-  void initialFlock(int size);
-  //  CudaSpec cusp();
+  CudaSpec cusp;
+    
  public:
   FlockSim(int size,float wall_size);
   virtual ~FlockSim()
   {
+    cudaFree(&dev_flock);
     free(F.flock);
   };
-  void printFlock();  
+  void printFlock();
+  void update_flock (float dt);  
+  /* data type */
+  Agent* dev_flock;
 };
   
 
