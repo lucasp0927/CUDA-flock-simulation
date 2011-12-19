@@ -8,25 +8,34 @@
 //#define NDEBUG
 using namespace std;
 
-void initialFlock(Flock &F,int size,float wallsize)
+FlockSim::FlockSim(int size,float wall_size)
+{
+  wallx = wall_size;
+  wally = wall_size;    
+  initialFlock(size);
+}
+
+__global__ void update_flock ()
+{
+}
+
+void FlockSim::initialFlock(int size)
 {
   /*
     space 0~wallx 0~wally 0~wallz
   */
   F.size = size;
-  F.wallx = wallsize;
-  F.wally = wallsize;
   F.flock =(Agent*) malloc(size*sizeof(Agent));
   srand((unsigned)time(0));
   for (int i = 0; i < F.size; ++i)
   {
     F.flock[i].angle = (float)rand()/(float)RAND_MAX*360.0;
-    F.flock[i].x = (float)rand()/(float)RAND_MAX*F.wallx;
-    F.flock[i].y = (float)rand()/(float)RAND_MAX*F.wally;        
+    F.flock[i].x = (float)rand()/(float)RAND_MAX*wallx;
+    F.flock[i].y = (float)rand()/(float)RAND_MAX*wally;        
   }
 }
 
-void printFlock(Flock &F)
+void FlockSim::printFlock()
 {
   cout  <<setw(8)<< "n"\
         <<setw(8) << "ang"\

@@ -1,7 +1,6 @@
 #ifndef FLOCKSIM_H_
 #define FLOCKSIM_H_
 
-
 typedef struct
 {
   float angle; //360
@@ -12,9 +11,24 @@ typedef struct
 {
   int size;//number of agents
   Agent* flock;
-  float wallx,wally;
 } Flock;
+
+class FlockSim
+{
+ private:
+  Flock F;
+  float wallx,wally;
+  void initialFlock(int size);
   
-void initialFlock(Flock &F,int size,float wallsize);
-void printFlock(Flock &F);
+ public:
+  FlockSim(int size,float wall_size);
+  virtual ~FlockSim()
+  {
+    free(F.flock);
+  };
+  void printFlock();  
+};
+  
+
+
 #endif
