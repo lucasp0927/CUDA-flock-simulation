@@ -1,6 +1,6 @@
 #NVCC = /usr/bin/nvcc
 GXX = g++
-CUDAPATH = /usr/lib
+CUDAPATH = /usr/lib/cuda
 NVCC = nvcc
 NVCCFLAGS = -I$(CUDAPATH)/include 
 #NVCCFLAGS = -arch sm_21  -I$(CUDAPATH)/include 

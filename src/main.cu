@@ -2,6 +2,10 @@
 #include<iostream>
 #include"FlockSim.h"
 
+#include <GL/glut.h>
+#include <cuda.h>
+#include <cudaGL.h>
+
 using namespace std;
 
 int main(int argc, char *argv[])
