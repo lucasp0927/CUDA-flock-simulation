@@ -13,7 +13,7 @@ flock:  FlockSim.o main.o
 	$(NVCC) -o flock main.o FlockSim.o 
 
 main.o:
-	$(GXX) $(GXXFLAG) -o main.o -c main.cpp
+	$(NVCC) $(NVCCFLAGS) $(LFLAGS) -o main.o -c main.cu
 
 FlockSim.o:
 	$(NVCC) $(NVCCFLAGS) $(LFLAGS)  -o FlockSim.o -c  FlockSim.cu
