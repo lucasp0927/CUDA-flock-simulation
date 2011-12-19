@@ -7,7 +7,7 @@ NVCCFLAGS = -I$(CUDAPATH)/include
 LFLAGS = -L$(CUDAPATH)/lib64 -lcuda -lcudart 
 GLFLAGS = -L/usr/lib -lGL -lglut
 GXXFLAG = -O3 -g
-FLOCKSIZE = 10
+FLOCKSIZE = 100
 WALLSIZE = 480
 
 flock:  FlockSim.o main.o

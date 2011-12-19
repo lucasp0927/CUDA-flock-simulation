@@ -35,10 +35,16 @@ __global__ void update_flock_gpu (Agent* F, float wallx,float wally,int size,flo
   {
     F[num].x += cos(F[num].angle)*F[num].v*dt;
     F[num].y += sin(F[num].angle)*F[num].v*dt;
-    if (F[num].x >= wallx || F[num].x <= (float)0.0)
+    if (F[num].x >= wallx/2 || F[num].x <= -wallx/2){
+       if (F[num].x >= wallx/2){F[num].x=wallx/2;}
+       else if(F[num].x<=-wallx/2){F[num].x=-wallx/2;}
       F[num].angle = ((float)180.0 - F[num].angle);
-    if (F[num].y >= wally || F[num].y <= (float)0.0)
+    }
+    if (F[num].y >= wally/2 || F[num].y <= -wally/2)	{
+       if (F[num].y >= wally/2){F[num].y=wally/2;}
+       else if (F[num].y <= -wally/2){F[num].y=-wally/2;}
       F[num].angle =  (-(float)1.0* F[num].angle);
+    }
     check_angle(F[num].angle);
   }
 }
@@ -64,8 +70,8 @@ void FlockSim::initialFlock(int size)
   for (int i = 0; i < F.size; ++i)
   {
     F.flock[i].angle = (float)rand()/(float)RAND_MAX*360.0;
-    F.flock[i].x = (float)rand()/(float)RAND_MAX*wallx;
-    F.flock[i].y = (float)rand()/(float)RAND_MAX*wally;
+    F.flock[i].x = (float)(rand()%(int)wallx/2);
+    F.flock[i].y = (float)(rand()%(int)wally/2);
     F.flock[i].v = (float)rand()/(float)RAND_MAX; // 0~1
   }
 }
