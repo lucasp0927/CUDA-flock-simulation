@@ -6,8 +6,9 @@
 #include <algorithm>
 #include <math.h>
 #include <iostream>
+#include <iomanip>
 #include <assert.h>
-
+#define SAMPLESIZE 100
 using namespace std;
 
 void normalize(float* f,int size);
@@ -24,6 +25,7 @@ class Node
   virtual ~Node();
   void init(int dim,int idx,int size);
   void setIdx(int i);
+  int getIdx() const;  
   void setParent(int p);
   void setLChild(int l);
   void setRChild(int r);
@@ -39,7 +41,16 @@ class Node
   float getDir(int dim) const;
   void setPos(int dim,float pos);
   void setDir(float* dir);
+  void setList(vector<int>* list);
   int median(int sample_sz,vector<int> * list,bool next); /* next will add _depth 1 */
+  int leftmedian();
+  int rightmedian();
+  vector<int>* getList() const;
+  vector<int>* getLList() const;
+  vector<int>* getRList() const;  
+  void setChild(Node* left,Node* right);
+  friend ostream& operator <<(ostream &os,Node& n);
+  
    private:
   int _idx;
   int _depth;

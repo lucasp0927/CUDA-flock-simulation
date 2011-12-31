@@ -61,8 +61,13 @@ int Node::getRChild() const{  return _tree[3*_idx+2];}
 void Node::setDepth(int d){  _depth = d;}
 int Node::getDepth() const{return _depth;}
 int Node::getDim() const{return _dim;}
+int Node::getIdx() const{return _idx;}
+vector<int>* Node::getList() const{return _list;}
+vector<int>* Node::getLList() const{return _llist;}
+vector<int>* Node::getRList() const{return _rlist;}
 void Node::buildRootList(int size)
 {
+  setParent(_idx);
   _list = new vector<int>;
   _list->reserve(size);
   for (int i = 0; i < size; ++i)
@@ -71,27 +76,20 @@ void Node::buildRootList(int size)
 }
 void Node::separateList()
 {
-  cerr << "separate"<<endl;
   int dim = _depth%_dim;
+  if (_rlist == NULL)
+    _rlist = new vector<int>;
+  if (_llist == NULL)
+    _llist = new vector<int>;
   for(vector<int>::iterator it = _list->begin(); it != _list->end(); ++it) {
-    /* std::cout << *it; ... */
-    if (getPos(*it,dim) > getPos(_idx,dim))
-      _rlist->push_back(*it);
-    else
-      _llist->push_back(*it);
+    if (*it != _idx)
+    {
+      if (getPos(*it,dim) > getPos(_idx,dim))
+        _rlist->push_back(*it);
+      else
+        _llist->push_back(*it);
+    }
   }
-  cout << "original list" << endl;
-  for(vector<int>::iterator it = _list->begin(); it != _list->end(); ++it)
-    cout << *it << " ";
-  cout << endl;
-  cout << "right list" << endl;
-  for(vector<int>::iterator it = _rlist->begin(); it != _rlist->end(); ++it)
-    cout << *it << " ";
-  cout << endl;
-  cout << "left list" << endl;
-  for(vector<int>::iterator it = _llist->begin(); it != _llist->end(); ++it)
-    cout << *it << " ";
-  cout << endl;  
   _list->clear();
 }
 float Node::getPos(int idx,int dim) const
@@ -159,17 +157,70 @@ int Node::median(int sample_sz,vector<int>* list,bool next)
         sample.push_back(tmp);
         count++;
       }
-      for (int i = 0; i < sample.size(); ++i)
-      {
-        sample[i] = (*list)[sample[i]];
-      }
     };
+    for (int i = 0; i < sample.size(); ++i)
+    {
+      sample[i] = (*list)[sample[i]];
+    }
     sort(sample.begin(),sample.end(),Less(this));
     if(next)
       _depth--;
     return sample[sample.size()/2];
   }
 }
+
+void Node::setList(vector<int>* list)
+{
+  _list = list;
+}
+
+void Node::setChild(Node* left,Node* right)
+{
+  if (left != NULL)
+  {
+  setLChild(left->getIdx());
+  left->setParent(_idx);
+  left->setDepth(_depth+1);
+  left->setList(_llist);
+  }
+  else
+    setLChild(_idx);
+  
+  if (right != NULL)
+  {
+    setRChild(right->getIdx());
+    right->setParent(_idx);  
+    right->setDepth(_depth+1);
+    right->setList(_rlist);
+  }
+  else
+    setRChild(_idx);
+}
+
+int Node::leftmedian()
+{
+  return median(100,_llist,true);
+}
+
+int Node::rightmedian()
+{
+  return median(100,_rlist,true);  
+}
+
+ostream &operator <<(ostream &os,Node& n)
+{
+  os << setw(3) << n.getIdx();
+  for (int i = 0; i < n.getDim(); ++i)
+  {
+    os << setw(10) << n.getPos(n.getIdx(),i);
+  }
+  os << setw(5) << "p:" << setw(5) << n.getParent();
+  os << setw(5) << "l:" << setw(5) << n.getLChild();
+  os << setw(5) << "r:" << setw(5) << n.getRChild();
+  os << setw(5) << "d:" << setw(5) << n.getDepth();  
+  return os;
+}
+
 /*
   angle:  -180*acos( dx / sqrt (  dx*dx + dy*dy  + dz *dz ))/M_PI
   rX:0
