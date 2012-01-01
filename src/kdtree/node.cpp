@@ -120,7 +120,7 @@ bool Node::Less::operator() (const int & a, const int& b)
 
 int Node::median(int sample_sz,vector<int>* list,bool next)
 {
-  static vector<int> sample;
+  vector<int> sample;
   sample.clear();  
   if (list == NULL)
   {
