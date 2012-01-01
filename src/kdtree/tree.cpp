@@ -42,9 +42,12 @@ void KdTree::findRoot()
 
 void* KdTree::construct_thread(Node* job)
 {
-  cerr << "in contruct_tread" << endl;
+  #ifndef NDEBUG
+  int count = 0;
+  #endif
   queue<Node*> unfinish;
   unfinish.push(job);
+  assert(unfinish.size() == 1);
   Node* cur;
   Node* left,* right;
   while(unfinish.size() > 0)
@@ -63,10 +66,23 @@ void* KdTree::construct_thread(Node* job)
       right = NULL;
     cur->setChild(left,right);
     if (left != NULL)
+    {
+      #ifndef NDEBUG
+      count++;
+      #endif
       unfinish.push(left);
-    if (right != NULL)    
-      unfinish.push(right);    
-  };  
+    }
+    if (right != NULL)
+    {
+      #ifndef NDEBUG
+      count++;
+      #endif      
+      unfinish.push(right);
+    }
+  };
+  #ifndef NDEBUG
+  cout << "process "<< count << " nodes." << endl;
+  #endif
 }
 
 void KdTree::construct()
@@ -112,7 +128,7 @@ void KdTree::testInit()
 
 void KdTree::randInit()
 {
-  srand (time(NULL));
+  //  srand (time(NULL));
   // position
   for (int i = 0; i < _size; ++i)
     for (int j = 0; j < _dim; ++j)

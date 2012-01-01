@@ -26,9 +26,17 @@ int* Node::_tree = NULL;
 Node::Node()
 {
 }
+
 Node::~Node()
 {
+  if (_static_init)
+  {
+    delete [] _data;
+    delete [] _tree;
+    _static_init = false;
+  }
 }
+
 void Node::init(int dim,int idx,int size)
 {
   _idx = idx;
@@ -52,9 +60,9 @@ void Node::init(int dim,int idx,int size)
   
 }
 void Node::setIdx(int i){  _idx = i;}
-void Node::setParent(int p){  _tree[3*_idx] = p;}
-void Node::setLChild(int l){  _tree[3*_idx+1] = l;}
-void Node::setRChild(int r){  _tree[3*_idx+2] = r;}
+inline void Node::setParent(int p){  _tree[3*_idx] = p;}
+inline void Node::setLChild(int l){  _tree[3*_idx+1] = l;}
+inline void Node::setRChild(int r){  _tree[3*_idx+2] = r;}
 int Node::getParent() const{  return _tree[3*_idx];}
 int Node::getLChild() const{  return _tree[3*_idx+1];}
 int Node::getRChild() const{  return _tree[3*_idx+2];}
@@ -159,9 +167,7 @@ int Node::median(int sample_sz,vector<int>* list,bool next)
       }
     };
     for (int i = 0; i < sample.size(); ++i)
-    {
       sample[i] = (*list)[sample[i]];
-    }
     sort(sample.begin(),sample.end(),Less(this));
     if(next)
       _depth--;

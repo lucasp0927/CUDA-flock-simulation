@@ -36,7 +36,6 @@ int main(int argc, char *argv[])
   //  kt.printNodes();
   kt.findRoot();
   kt.construct();
-  //  kt.printNodes();    
   ConstructTree(thread_number,&kt,thread_handles);
   
   // ----------------------------------------
@@ -46,7 +45,6 @@ int main(int argc, char *argv[])
   mtime = ((seconds) * 1000 + useconds/1000.0) + 0.5;
   printf("Elapsed time: %ld milliseconds\n", mtime);
   // -----------------------------------------
-  
-  //kt.printNodes();      
+  //  kt.printNodes();    
   return 0;
 }

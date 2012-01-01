@@ -1,6 +1,6 @@
 #ifndef NODE_H_
 #define NODE_H_
-//#defind NDEBUG
+//#define NDEBUG
 #include <stdlib.h>
 #include <vector>
 #include <algorithm>
@@ -26,9 +26,9 @@ class Node
   void init(int dim,int idx,int size);
   void setIdx(int i);
   int getIdx() const;  
-  void setParent(int p);
-  void setLChild(int l);
-  void setRChild(int r);
+  inline void setParent(int p);
+  inline void setLChild(int l);
+  inline void setRChild(int r);
   int getParent() const;
   int getLChild() const;
   int getRChild() const;
