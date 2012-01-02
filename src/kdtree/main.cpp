@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <string>
-#include<vector>
+#include <vector>
 #include <iostream>
 #include <iomanip>
 #include "node.h"
@@ -45,6 +45,16 @@ int main(int argc, char *argv[])
   mtime = ((seconds) * 1000 + useconds/1000.0) + 0.5;
   printf("Elapsed time: %ld milliseconds\n", mtime);
   // -----------------------------------------
-  //  kt.printNodes();    
-  return 0;
+  //  kt.printNodes();
+  if (kt.checkTree())
+    cout << "kd tree is correct"<<endl;
+  else
+    cout << "kd tree is incorrect" << endl;
+  // float* p = new float[3];
+  // p[0] = 1.0;
+  // p[1] = 1.0;
+  // p[2] = 1.0;
+  // kt.findNearest(p);
+  // delete [] p;
+  // return 0;
 }

@@ -35,8 +35,10 @@ class KdTree
  void printNodes();
  void testInit();
  void randInit();
- void* construct_thread(Node* job);
+ void* construct_thread(Node* job,struct drand48_data* buffer);
  void construct();
+ void findNearest(float* x);
+ bool checkTree();
  int getRoot();
  Node* getJob();
  private:

@@ -29,6 +29,7 @@ class Node
   inline void setParent(int p);
   inline void setLChild(int l);
   inline void setRChild(int r);
+  bool isEnd()  ;
   int getParent() const;
   int getLChild() const;
   int getRChild() const;
@@ -42,9 +43,10 @@ class Node
   void setPos(int dim,float pos);
   void setDir(float* dir);
   void setList(vector<int>* list);
-  int median(int sample_sz,vector<int> * list,bool next); /* next will add _depth 1 */
-  int leftmedian();
-  int rightmedian();
+  int median(int sample_sz,vector<int> * list,bool next,struct drand48_data *buffer = NULL); /* next will add _depth 1 */
+  int leftmedian(struct drand48_data *buffer = NULL);
+  int rightmedian(struct drand48_data *buffer = NULL);
+  float distance(float* x);
   vector<int>* getList() const;
   vector<int>* getLList() const;
   vector<int>* getRList() const;  

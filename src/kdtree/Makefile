@@ -9,7 +9,7 @@ LFLAGS = -L$(CUDAPATH)/lib64 -lcuda -lcudart  -lm
 GXXFLAG = -O3 -lm -lpthread
 
 kdtree:  node.o main.o tree.o
-	$(GXX) -o kdtree main.o node.o tree.o -lpthread
+	$(GXX) $(GXXFLAG) -o kdtree main.o node.o tree.o -lpthread
 
 main.o: main.cpp
 	$(GXX) $(GXXFLAG) -o main.o -c main.cpp

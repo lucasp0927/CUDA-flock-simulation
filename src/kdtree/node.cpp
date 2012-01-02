@@ -73,6 +73,14 @@ int Node::getIdx() const{return _idx;}
 vector<int>* Node::getList() const{return _list;}
 vector<int>* Node::getLList() const{return _llist;}
 vector<int>* Node::getRList() const{return _rlist;}
+bool Node::isEnd()
+{
+  if (getLChild() == _idx && getRChild() == _idx)
+    return true;
+  else return false;
+}
+
+
 void Node::buildRootList(int size)
 {
   setParent(_idx);
@@ -126,8 +134,9 @@ bool Node::Less::operator() (const int & a, const int& b)
       return (myNode->getPos(a,myNode->getDepth()%myNode->getDim()) < myNode->getPos(b,myNode->getDepth()%myNode->getDim()));          
 } 
 
-int Node::median(int sample_sz,vector<int>* list,bool next)
+int Node::median(int sample_sz,vector<int>* list,bool next,struct drand48_data *buffer)
 {
+  double randnum;
   vector<int> sample;
   sample.clear();  
   if (list == NULL)
@@ -139,7 +148,13 @@ int Node::median(int sample_sz,vector<int>* list,bool next)
     int tmp;
     while (count != sample_sz)
     {
-      tmp = rand() % (_size);
+      if (buffer == NULL)
+        tmp = rand() % _size;
+      else
+      {
+        drand48_r(buffer, &randnum);
+        tmp =  tmp*(_size);
+      }
       if (find(sample.begin(),sample.end(),tmp) == sample.end())
       {
         sample.push_back(tmp);
@@ -159,12 +174,19 @@ int Node::median(int sample_sz,vector<int>* list,bool next)
     int tmp;
     while (count != sample_sz)
     {
-      tmp = rand() % (list->size());
-      if (find(sample.begin(),sample.end(),tmp) == sample.end())
+      if (buffer == NULL)
+        tmp = rand() % (list->size());        
+      else
       {
+        drand48_r(buffer, &randnum);
+        tmp =  randnum*(list->size());
+      }      
+
+           if (find(sample.begin(),sample.end(),tmp) == sample.end())
+           {
         sample.push_back(tmp);
         count++;
-      }
+           }
     };
     for (int i = 0; i < sample.size(); ++i)
       sample[i] = (*list)[sample[i]];
@@ -203,16 +225,28 @@ void Node::setChild(Node* left,Node* right)
     setRChild(_idx);
 }
 
-int Node::leftmedian()
+int Node::leftmedian(struct drand48_data *buffer)
 {
-  return median(100,_llist,true);
+  return median(100,_llist,true,buffer);
 }
 
-int Node::rightmedian()
+int Node::rightmedian(struct drand48_data *buffer)
 {
-  return median(100,_rlist,true);  
+  return median(100,_rlist,true,buffer);  
 }
 
+float Node::distance(float* x)
+{
+  float d = 0.0;
+  float tmp;
+  for (int i = 0; i < _dim; ++i)
+  {
+    tmp = x[i] - getPos(_idx,i);
+    d += tmp*tmp;
+  }
+  d = sqrt(d);
+}
+  
 ostream &operator <<(ostream &os,Node& n)
 {
   os << setw(3) << n.getIdx();
@@ -223,7 +257,8 @@ ostream &operator <<(ostream &os,Node& n)
   os << setw(5) << "p:" << setw(5) << n.getParent();
   os << setw(5) << "l:" << setw(5) << n.getLChild();
   os << setw(5) << "r:" << setw(5) << n.getRChild();
-  os << setw(5) << "d:" << setw(5) << n.getDepth();  
+  os << setw(5) << "d:" << setw(5) << n.getDepth();
+  os << setw(5) << "e:" << setw(5) << n.isEnd();    
   return os;
 }
 
