@@ -1,7 +1,5 @@
 #include "tree.h"
-
 #ifndef NDEBUG
-#include <sys/time.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -28,6 +26,7 @@ void WorldGeo::setWall(float* wall)
 KdTree::KdTree(int thread_n, int size, WorldGeo* wg):_thread_n(thread_n),_size(size),_wg(wg)
 {
   /* pthread handles */
+  cout << "init kd tree..."<<endl;
   _nodes = new Node[_size];
   _dim = wg->getDim();
   for (int i = 0; i < _size; ++i)
@@ -94,17 +93,15 @@ void* KdTree::construct_thread(Node* job,struct drand48_data* buffer)
     }
   };
   #ifndef NDEBUG
-  cout << endl;
-  cout << "Thread Report"<<endl;  
+  //  cout << "Thread Report"<<endl;  
   // ----------------------------------------
-  gettimeofday(&end, NULL);
-  seconds  = end.tv_sec  - start.tv_sec;
-  useconds = end.tv_usec - start.tv_usec;
-  mtime = ((seconds) * 1000 + useconds/1000.0) + 0.5;
-  printf("Elapsed time: %ld milliseconds\n", mtime);
+  // gettimeofday(&end, NULL);
+  // seconds  = end.tv_sec  - start.tv_sec;
+  // useconds = end.tv_usec - start.tv_usec;
+  // mtime = ((seconds) * 1000 + useconds/1000.0) + 0.5;
+  // printf("Elapsed time: %ld milliseconds\n", mtime);
   // -----------------------------------------  
   cout << "processed "<< count << " nodes." << endl;
-  cout << endl;
   #endif
 }
 
@@ -249,6 +246,12 @@ void KdTree::findNearest(float* x)
   cout << cur << endl;
 }
 
+void KdTree::clearTree()
+{
+  for (int i = 0; i < _size; ++i)
+    _nodes[i].clear();
+}
+
 void* launchThread(void* arg)
 {
   // initialize drand
@@ -257,7 +260,6 @@ void* launchThread(void* arg)
   gettimeofday(&tv, NULL);
   struct drand48_data drand_buffer;  
   srand48_r(tv.tv_sec * myarg->rank + tv.tv_usec, &drand_buffer);
-  
   myarg->myTree->construct_thread(myarg->job, &drand_buffer);
 }
 
@@ -275,7 +277,8 @@ void ConstructTree(int thread_n , KdTree* myTree, pthread_t* thread_handles)
     pthread_create(&thread_handles[thread],NULL, launchThread,(void*) &args[thread]);
   
   for (long thread = 0; thread < thread_n; thread++)
-    pthread_join(thread_handles[thread],NULL);    
+    pthread_join(thread_handles[thread],NULL);
+  delete [] args;
 }
 
 

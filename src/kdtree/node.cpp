@@ -80,16 +80,20 @@ bool Node::isEnd()
   else return false;
 }
 
-
 void Node::buildRootList(int size)
 {
   setParent(_idx);
-  _list = new vector<int>;
-  _list->reserve(size);
+  if (_list == NULL)
+    _list = new vector<int>;
+  else
+    _list->clear();
+  
+  _list->reserve(size);    
   for (int i = 0; i < size; ++i)
     (*_list).push_back(i);
   _depth = 0;  
 }
+
 void Node::separateList()
 {
   int dim = _depth%_dim;
@@ -138,11 +142,11 @@ int Node::median(int sample_sz,vector<int>* list,bool next,struct drand48_data *
 {
   double randnum;
   vector<int> sample;
-  sample.clear();  
   if (list == NULL)
   {
-    assert(_depth == 0);
-    sample_sz = _size < sample_sz? _size:sample_sz;    
+    //    assert(_depth == 0);
+    sample_sz = _size < sample_sz? _size:sample_sz;
+    sample.reserve(sample_sz);  
     // test all points
     int count = 0;
     int tmp;
@@ -155,11 +159,11 @@ int Node::median(int sample_sz,vector<int>* list,bool next,struct drand48_data *
         drand48_r(buffer, &randnum);
         tmp =  tmp*(_size);
       }
-      if (find(sample.begin(),sample.end(),tmp) == sample.end())
-      {
+        //    if (find(sample.begin(),sample.end(),tmp) == sample.end())
+        // {
         sample.push_back(tmp);
         count++;
-      }
+        //      }
     };
     sort(sample.begin(),sample.end(),Less(this));
     return sample[sample.size()/2];    
@@ -169,7 +173,8 @@ int Node::median(int sample_sz,vector<int>* list,bool next,struct drand48_data *
     if(next)
       _depth++;
     assert(list->size() != 0);
-    sample_sz = list->size() < sample_sz? list->size():sample_sz;        
+    sample_sz = list->size() < sample_sz? list->size():sample_sz;
+    sample.reserve(sample_sz);      
     int count = 0;
     int tmp;
     while (count != sample_sz)
@@ -182,11 +187,11 @@ int Node::median(int sample_sz,vector<int>* list,bool next,struct drand48_data *
         tmp =  randnum*(list->size());
       }      
 
-           if (find(sample.begin(),sample.end(),tmp) == sample.end())
-           {
+      //      if (find(sample.begin(),sample.end(),tmp) == sample.end())
+      //      {
         sample.push_back(tmp);
         count++;
-           }
+        //      }
     };
     for (int i = 0; i < sample.size(); ++i)
       sample[i] = (*list)[sample[i]];
@@ -199,6 +204,11 @@ int Node::median(int sample_sz,vector<int>* list,bool next,struct drand48_data *
 
 void Node::setList(vector<int>* list)
 {
+  if (_list != NULL)
+  {
+    delete _list;
+    _list = NULL;
+  }
   _list = list;
 }
 
@@ -210,6 +220,7 @@ void Node::setChild(Node* left,Node* right)
   left->setParent(_idx);
   left->setDepth(_depth+1);
   left->setList(_llist);
+  _llist = NULL;
   }
   else
     setLChild(_idx);
@@ -220,6 +231,7 @@ void Node::setChild(Node* left,Node* right)
     right->setParent(_idx);  
     right->setDepth(_depth+1);
     right->setList(_rlist);
+    _rlist = NULL;
   }
   else
     setRChild(_idx);
@@ -246,6 +258,28 @@ float Node::distance(float* x)
   }
   d = sqrt(d);
 }
+
+void Node::clear()
+{
+  if (_list != NULL)
+  {
+    delete _list;
+    _list = NULL;
+  }
+
+  if (_llist != NULL)
+  {
+    delete _llist;
+    _llist = NULL;
+  }
+  
+  if (_rlist != NULL)
+  {
+    delete _rlist;
+    _rlist = NULL;
+  }
+}
+
   
 ostream &operator <<(ostream &os,Node& n)
 {

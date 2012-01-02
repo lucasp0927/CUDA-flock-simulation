@@ -1,6 +1,6 @@
 #ifndef TREE_H_
 #define TREE_H_
-//#define NDEBUG
+#define NDEBUG
 #include <stdlib.h>
 #include <vector>
 #include <queue>
@@ -10,7 +10,9 @@
 #include <assert.h>
 #include <pthread.h>
 #include "node.h"
-#define SAMPLESIZE 100
+#include <sys/time.h>
+
+#define SAMPLESIZE 300
 using namespace std;
 
 class WorldGeo
@@ -41,6 +43,7 @@ class KdTree
  bool checkTree();
  int getRoot();
  Node* getJob();
+ void clearTree();
  private:
   Node* _nodes; 
   int _thread_n;

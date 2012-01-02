@@ -1,6 +1,6 @@
 #ifndef NODE_H_
 #define NODE_H_
-//#define NDEBUG
+#define NDEBUG
 #include <stdlib.h>
 #include <vector>
 #include <algorithm>
@@ -8,7 +8,7 @@
 #include <iostream>
 #include <iomanip>
 #include <assert.h>
-#define SAMPLESIZE 100
+#define SAMPLESIZE 300
 using namespace std;
 
 void normalize(float* f,int size);
@@ -51,6 +51,7 @@ class Node
   vector<int>* getLList() const;
   vector<int>* getRList() const;  
   void setChild(Node* left,Node* right);
+  void clear();
   friend ostream& operator <<(ostream &os,Node& n);
   
    private:

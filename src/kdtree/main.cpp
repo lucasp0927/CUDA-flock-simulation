@@ -34,9 +34,15 @@ int main(int argc, char *argv[])
   // ---------------------------------
   
   //  kt.printNodes();
-  kt.findRoot();
-  kt.construct();
-  ConstructTree(thread_number,&kt,thread_handles);
+  for (int i = 0; i < 10000; ++i)
+  {
+    cout << i << endl;
+    kt.randInit();  
+    kt.findRoot();  
+    kt.construct();
+    ConstructTree(thread_number,&kt,thread_handles);
+    //    kt.clearTree();
+  }
   
   // ----------------------------------------
   gettimeofday(&end, NULL);
