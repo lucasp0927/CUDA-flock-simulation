@@ -8,7 +8,7 @@
 #include <iostream>
 #include <iomanip>
 #include <assert.h>
-#define SAMPLESIZE 300
+#define SAMPLESIZE 100
 using namespace std;
 
 void normalize(float* f,int size);

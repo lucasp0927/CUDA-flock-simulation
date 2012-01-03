@@ -4,6 +4,7 @@
 #include <stack>
 #include <iostream>
 #include <iomanip>
+#include <math.h>
 #include "node.h"
 #include "tree.h"
 
@@ -49,10 +50,12 @@ int main(int argc, char *argv[])
   printf("Elapsed time: %ld milliseconds\n", mtime);
   // -----------------------------------------
   //kt.printNodes();
-  if (kt.checkTree())
-    cout << "kd tree is correct"<<endl;
-  else
-    cout << "kd tree is incorrect" << endl;
+  // if (kt.checkTree())
+  //   cout << "kd tree is correct"<<endl;
+  // else
+  //   cout << "kd tree is incorrect" << endl;
+  cout << "max depth " << kt.deepest()<<endl;
+  cout << "optimal depth " << (int)log2(size)<<endl;
   gettimeofday(&start, NULL);
   kt.findWithin(0,2.0);
   // ----------------------------------------

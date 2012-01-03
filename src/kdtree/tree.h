@@ -13,7 +13,7 @@
 #include "node.h"
 #include <sys/time.h>
 
-#define SAMPLESIZE 300
+#define SAMPLESIZE 100
 using namespace std;
 
 class WorldGeo
@@ -40,14 +40,15 @@ class KdTree
  void randInit();
  void* construct_thread(Node* job,struct drand48_data* buffer);
  void construct();
- bool move(int& cur,int d,float dis);
- int goDown(int& cur,int d,float dis);
+ bool move(int& cur,int& d,float& dis);
+ int goDown(int& cur,int& d,float& dis);
  void findWithin(int d,float dis);
  void findWithin_slow(int d,float dis); 
  bool checkTree();
  int getRoot();
  Node* getJob();
  void clearTree();
+ int deepest();
  private:
   Node* _nodes; 
   int _thread_n;
