@@ -8,8 +8,8 @@ NVCCFLAGS =   -I$(CUDAPATH)/include
 LFLAGS = -L$(CUDAPATH)/lib64 -lcuda -lcudart -lm -O3 -lpthread
 GXXFLAG = -O3 -lm -lpthread
 
-kdtree:  node.o main.o tree.o
-	$(NVCC) $(NVCCFLAGS) $(LFLAGS) -o kdtree main.o node.o tree.o -lpthread
+kdtree:  main.o flocksim.o node.o tree.o
+	$(NVCC) $(NVCCFLAGS) $(LFLAGS) -o kdtree main.o flocksim.o node.o tree.o -lpthread
 
 main.o: main.cu
 	$(NVCC) $(NVCCFLAGS) $(LFLAGS) -o main.o -c main.cu
@@ -19,6 +19,10 @@ node.o: node.cu node.h
 
 tree.o: tree.cu tree.h
 	$(NVCC) $(NVCCFLAGS) $(LFLAGS) -o tree.o -c tree.cu
+
+flocksim.o: flocksim.cu flocksim.h tree.o node.o
+	$(NVCC) $(NVCCFLAGS) $(LFLAGS) -o flocksim.o -c flocksim.cu
+
 
 #kdtree.o: kdtree.cu kdtree.h
 #	$(NVCC) $(NVCCFLAGS) $(LFLAGS) -o kdtree.o -c  kdtree.cu

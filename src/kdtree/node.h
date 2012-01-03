@@ -43,9 +43,12 @@ class Node
   void setPos(int dim,float pos);
   void setDir(float* dir);
   void setList(vector<int>* list);
-  int median(int sample_sz,vector<int> * list,bool next,struct drand48_data *buffer = NULL); /* next will add _depth 1 */
+  int median(int sample_sz,vector<int> * list,bool next,struct drand48_data *buffer = NULL); /* next will add _depth 1 */  
   int leftmedian(struct drand48_data *buffer = NULL);
   int rightmedian(struct drand48_data *buffer = NULL);
+  static int* getTree(){return _tree;}
+  static float* getData(){return _data;}
+  static int getPSize(){return _psize;}  
   float distance(int idx);
   vector<int>* getList() const;
   vector<int>* getLList() const;
@@ -54,7 +57,7 @@ class Node
   void clear();
   friend ostream& operator <<(ostream &os,Node& n);
   
-   private:
+ private:
   int _idx;
   int _depth;
   static int _psize;

@@ -13,7 +13,7 @@ WorldGeo::WorldGeo(int dim):_dim(dim)
 
 WorldGeo::~WorldGeo()
 {
-  delete[] _wall;
+  //delete[] _wall;
 }
 int WorldGeo::getDim(){return _dim;}
 float WorldGeo::getWall(int dim,int m){return _wall[dim*2+m];}
@@ -102,6 +102,7 @@ void* KdTree::construct_thread(Node* job,struct drand48_data* buffer)
   // -----------------------------------------  
   cout << "processed "<< count << " nodes." << endl;
 #endif
+  return NULL;
 }
 
 void KdTree::construct()
@@ -347,6 +348,7 @@ void* launchThread(void* arg)
   struct drand48_data drand_buffer;  
   srand48_r(tv.tv_sec * myarg->rank + tv.tv_usec, &drand_buffer);
   myarg->myTree->construct_thread(myarg->job, &drand_buffer);
+  return NULL;
 }
 
 void ConstructTree(int thread_n , KdTree* myTree, pthread_t* thread_handles)

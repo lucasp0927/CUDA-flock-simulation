@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <vector>
 #include <queue>
-#include <stack>
 #include <algorithm>
 #include <math.h>
 #include <iostream>
@@ -40,8 +39,6 @@ class KdTree
  void randInit();
  void* construct_thread(Node* job,struct drand48_data* buffer);
  void construct();
- bool move(int& cur,int& d,float& dis);
- int goDown(int& cur,int& d,float& dis);
  void findWithin(int d,float dis);
  void findWithin_slow(int d,float dis); 
  bool checkTree();
@@ -49,12 +46,18 @@ class KdTree
  Node* getJob();
  void clearTree();
  int deepest();
+ int* getTree() {return Node::getTree(); }
+ float* getData(){return Node::getData(); }
  private:
   Node* _nodes; 
   int _thread_n;
   WorldGeo* _wg;
   int _root,_size,_dim;
   queue<Node*> _unfinish;
+
+  bool move(int& cur,int& d,float& dis);
+  int goDown(int& cur,int& d,float& dis);
+  
 };
 
 typedef struct{
