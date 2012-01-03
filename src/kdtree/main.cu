@@ -39,9 +39,12 @@ int main(int argc, char *argv[])
   fs.cpytree2dev();
   fs.update();
   fs.cpy2host();
-  cout << fs.getPos(1,0)<<endl;
-  cout << fs.getDir(1,0)<<endl;  
-  // render here;
+  //---------------------
+  //RENDER HERE
+  //---------------------
+  //fs.getPos(int index,int XYZ);
+  //fs.getDir(int index,int angle_rY_rZ);
+
   // ----------------------------------------
   gettimeofday(&end, NULL);
   seconds  = end.tv_sec  - start.tv_sec;
