@@ -2,4 +2,3 @@ bin/*
 *.o
 *.so
 src/flock
-kdtree
