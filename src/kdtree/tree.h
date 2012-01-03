@@ -47,7 +47,8 @@ class KdTree
  void clearTree();
  int deepest();
  int* getTree() {return Node::getTree(); }
- float* getData(){return Node::getData(); }
+ float* getPos(){return Node::getPos(); }
+ float* getDir(){return Node::getDir(); } 
  private:
   Node* _nodes; 
   int _thread_n;

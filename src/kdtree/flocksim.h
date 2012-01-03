@@ -18,8 +18,12 @@ class FlockSim
   virtual ~FlockSim();
   void makeTree();              /* construct kdtree */
   void update();                /* update data on GPU */
+  void initializeGpuData(); /* copy data to dev that only need to be done one time */
   void cpy2host();              /* copy data to host */
-  void cpy2dev();               /* copy tree and data to dev */
+  void cpytree2dev();               /* copy tree and data to dev */
+  float getPos(int idx,int ax){return Node::getPos(idx,ax);}
+  float getDir(int idx,int ax){return _ang_dir[idx*3+ax];}
+  //void convertDir(float* _xyz_dir,float* _ang_dir,int size);
  private:
   WorldGeo _wg;
   KdTree*   _kt;
@@ -27,10 +31,15 @@ class FlockSim
   int       _size;
   int      _thread_n;
   pthread_t* _thread_handles;
-  float* _dev_data;
+  float* _dev_pos;
   int* _dev_tree;
-  float* _data;
+  float* _pos;
+  float* _dev_xyz_dir;
+  float* _dev_ang_dir;  
+  float* _xyz_dir;
+  float* _ang_dir;
   int* _tree;
+  int Block_Dim_x,Block_Dim_y,Grid_Dim_x,Grid_Dim_y;
 };
 
 #endif

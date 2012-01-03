@@ -27,15 +27,21 @@ int main(int argc, char *argv[])
 
   FlockSim fs = FlockSim(size,thread_number,wg);
 
+
+  fs.initializeGpuData();       // only needed one time
 // ----------------------------------
   struct timeval start, end;
   long mtime, seconds, useconds;    
   gettimeofday(&start, NULL);
   // ---------------------------------
+  // repeat this part
   fs.makeTree();  
-  fs.cpy2dev();
+  fs.cpytree2dev();
   fs.update();
   fs.cpy2host();
+  cout << fs.getPos(1,0)<<endl;
+  cout << fs.getDir(1,0)<<endl;  
+  // render here;
   // ----------------------------------------
   gettimeofday(&end, NULL);
   seconds  = end.tv_sec  - start.tv_sec;
@@ -43,5 +49,4 @@ int main(int argc, char *argv[])
   mtime = ((seconds) * 1000 + useconds/1000.0) + 0.5;
   printf("Elapsed time: %ld milliseconds\n", mtime);
   // -----------------------------------------  
-
 }

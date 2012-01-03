@@ -17,7 +17,7 @@ class Node
 {
   struct Less {
   Less(Node* c) : myNode(c) {}
-    bool operator () ( const int & a, const int & b );
+    bool operator () ( const int & a,const int & b );
     Node* myNode;
   };  
  public:
@@ -38,16 +38,18 @@ class Node
   int getDim() const;  
   void buildRootList(int size);
   void separateList();
-  float getPos(int idx,int dim) const;
+  static float getPos(int idx,int dim)  {   return _pos[idx*_psize+dim];  }
+  static float getDir(int idx,int dim)  {   return _xyz_dir[idx*_psize+dim];  }  
   float getDir(int dim) const;
   void setPos(int dim,float pos);
-  void setDir(float* dir);
+  void setDir(int dim,float dir);
   void setList(vector<int>* list);
   int median(int sample_sz,vector<int> * list,bool next,struct drand48_data *buffer = NULL); /* next will add _depth 1 */  
   int leftmedian(struct drand48_data *buffer = NULL);
   int rightmedian(struct drand48_data *buffer = NULL);
   static int* getTree(){return _tree;}
-  static float* getData(){return _data;}
+  static float* getPos(){return _pos;}
+  static float* getDir(){return _xyz_dir;}  
   static int getPSize(){return _psize;}  
   float distance(int idx);
   vector<int>* getList() const;
@@ -64,8 +66,9 @@ class Node
   static int _size;
   static int _dim;  
   static bool _static_init;
-  static float* _data;          /* position and direction */
-  static int* _tree;
+  static float* _pos;          /* position only */
+  static float* _xyz_dir;
+static int* _tree;
   vector<int>* _list,*_llist,*_rlist;
 };
 #endif

@@ -153,6 +153,9 @@ void KdTree::randInit()
   for (int i = 0; i < _size; ++i)
     for (int j = 0; j < _dim; ++j)
       _nodes[i].setPos(j,randRange(_wg->getWall(j,0),_wg->getWall(j,1)));
+  for (int i = 0; i < _size; ++i)
+    for (int j = 0; j < _dim; ++j)
+      _nodes[i].setDir(j,randRange(-2.0,2.0));  
 }
 
 int KdTree::getRoot(){return _root;}
@@ -187,7 +190,7 @@ bool KdTree::checkTree()
           ax = _nodes[cur].getDepth()%_dim;
           if (lr == 0)
             {
-              if (_nodes[check].getPos(check,ax) > _nodes[cur].getPos(cur,ax))
+              if (Node::getPos(check,ax) > Node::getPos(cur,ax))
                 {
                   cout << "check:" << check << " wrong at:" << cur << endl;
                   return false;
@@ -195,7 +198,7 @@ bool KdTree::checkTree()
             }
           else
             {
-              if (_nodes[check].getPos(check,ax) < _nodes[cur].getPos(cur,ax))
+              if (Node::getPos(check,ax) < Node::getPos(cur,ax))
                 {
                   cout << "check:" << check << " wrong at:" << cur << endl;          
                   return false;
@@ -237,7 +240,7 @@ int KdTree::goDown(int& cur,int& d,float& dis)
   while (!_nodes[cur].isEnd())
     {
       ax = _nodes[cur].getDepth()%_dim;
-      if (_nodes[d].getPos(d,ax) > _nodes[cur].getPos(cur,ax))
+      if (Node::getPos(d,ax) > Node::getPos(cur,ax))
         {
           tmp = _nodes[cur].getRChild();
           if (tmp == cur)
@@ -264,8 +267,8 @@ bool KdTree::move(int& cur , int& d,float& dis)
 {
   int parent = _nodes[cur].getParent();
   int ax = _nodes[parent].getDepth()%_dim;
-  float d_ax = _nodes[d].getPos(d,ax);
-  float curp_ax = _nodes[parent].getPos(parent,ax);
+  float d_ax = Node::getPos(d,ax);
+  float curp_ax = Node::getPos(parent,ax);
 
   if (fabs(d_ax - curp_ax) <= dis)
     {

@@ -19,7 +19,8 @@ bool Node:: _static_init = false;
 int Node::_dim = 0;
 int Node::_size = 0;
 int Node::_psize = 0;
-float* Node::_data = NULL;
+float* Node::_pos = NULL;
+float* Node::_xyz_dir = NULL;
 int* Node::_tree = NULL;
 
 Node::Node()
@@ -30,7 +31,7 @@ Node::~Node()
 {
   if (_static_init)
   {
-    delete [] _data;
+    delete [] _pos;
     delete [] _tree;
     _static_init = false;
   }
@@ -47,13 +48,14 @@ void Node::init(int dim,int idx,int size)
   {
     assert(dim == 2||dim == 3);
     if (dim == 3)
-      _psize = 8;
+      _psize = 3;
     else if (dim == 2)
-      _psize = 4;
+      _psize = 2;
     _size = size;
     _dim = dim;
     _tree = new int[3*_size];
-    _data = new float[_psize*_size];
+    _xyz_dir = new float[_dim*_size];    
+    _pos = new float[_psize*_size];
     _static_init = true;
   }
   
@@ -111,27 +113,19 @@ void Node::separateList()
   }
   _list->clear();
 }
-float Node::getPos(int idx,int dim) const
-{
-   assert (dim < _dim);
-   return _data[idx*_psize+dim];   
-}
-float Node::getDir(int dim) const
-{
-  assert (dim < _dim);
-  return _data[_idx*_psize+_dim+dim];
-}
+
+
 void Node::setPos(int dim,float pos)
 {
-  assert (dim < _dim);
-  _data[_idx*_psize+dim] = pos;  
+  _pos[_idx*_psize+dim] = pos;  
 }
-void Node::setDir(float* dir)
+
+void Node::setDir(int dim,float dir)
 {
-  normalize(dir,_dim);
-  for (int i = 0; i < _dim; ++i)
-    _data[_idx*_psize+_dim+i] = dir[i];      
+  _xyz_dir[_idx*_psize+dim] = dir;  
 }
+
+
 bool Node::Less::operator() (const int & a, const int& b)
 {
       return (myNode->getPos(a,myNode->getDepth()%myNode->getDim()) < myNode->getPos(b,myNode->getDepth()%myNode->getDim()));          
