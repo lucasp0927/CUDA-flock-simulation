@@ -15,7 +15,6 @@ float randRange(float a,float b)
   return a+(b-a)*((float)rand()/RAND_MAX);
 }
 
-
 bool Node:: _static_init = false;
 int Node::_dim = 0;
 int Node::_size = 0;
@@ -247,16 +246,17 @@ int Node::rightmedian(struct drand48_data *buffer)
   return median(100,_rlist,true,buffer);  
 }
 
-float Node::distance(float* x)
+float Node::distance(int idx)
 {
   float d = 0.0;
   float tmp;
   for (int i = 0; i < _dim; ++i)
   {
-    tmp = x[i] - getPos(_idx,i);
+    tmp = getPos(idx,i) - getPos(_idx,i);
     d += tmp*tmp;
   }
   d = sqrt(d);
+  return d;
 }
 
 void Node::clear()

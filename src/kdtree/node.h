@@ -46,7 +46,7 @@ class Node
   int median(int sample_sz,vector<int> * list,bool next,struct drand48_data *buffer = NULL); /* next will add _depth 1 */
   int leftmedian(struct drand48_data *buffer = NULL);
   int rightmedian(struct drand48_data *buffer = NULL);
-  float distance(float* x);
+  float distance(int idx);
   vector<int>* getList() const;
   vector<int>* getLList() const;
   vector<int>* getRList() const;  

@@ -206,44 +206,117 @@ bool KdTree::checkTree()
   return true;
 }
 
-void KdTree::findNearest(float* x)
+void KdTree::findWithin_slow(int d,float dis)
 {
-  int cur = _root;              // current best
-  int cur_best;
-  int cur_tmp;
-  float cur_d,tmp_d;
+  int count = 0;
+  cout << "slow version"<<endl;
+  for (int i = 0; i < _size; ++i)
+    {
+      if (i != d)
+        {
+          if (_nodes[d].distance(i) < dis)
+            {
+              //cout << i << endl;
+              count++;
+            }
+          
+        }
+    }
+  cout << count<<endl;
+}
+
+int KdTree::goDown(int& cur,int d,float dis)
+{
   int ax;
+  int tmp;
+  int count = 0;
+  if (cur != d && _nodes[d].distance(cur) < dis)
+    {
+      //cout << cur << endl;
+      count++;
+    }  
   while (!_nodes[cur].isEnd())
-  {
-    ax = _nodes[cur].getDepth()%_dim;
-    if (x[ax] > _nodes[cur].getPos(cur,ax))
-      cur = _nodes[cur].getRChild();
-    else
-      cur = _nodes[cur].getLChild();
-  };
-  cur_tmp = cur;
-  cur_d = _nodes[cur].distance(x);
-  while (cur_tmp != _root)
-  {
-    cur_tmp = _nodes[cur_tmp].getParent();
-    tmp_d = _nodes[cur_tmp].distance(x);
-    if (tmp_d < cur_d)
     {
-      cur_d = tmp_d;
-      cur = cur_tmp;
-    }
-    // search other side
-    ax = _nodes[cur_tmp].getDepth()%_dim;
-    float pd = x[ax] - _nodes[cur_tmp].getPos(cur_tmp,ax);
-    pd = (pd < 0.0)? -1.0*pd:pd;
-    cout << cur_d <<" "<<pd<<endl;
-    if (cur_d > pd)
+      ax = _nodes[cur].getDepth()%_dim;
+      if (_nodes[d].getPos(d,ax) > _nodes[cur].getPos(cur,ax))
+        {
+          tmp = _nodes[cur].getRChild();
+          if (tmp == cur)
+            cur = _nodes[cur].getLChild();
+          else cur = tmp;
+        }
+      else
+        {
+          tmp = _nodes[cur].getLChild();
+          if (tmp == cur)
+            cur = _nodes[cur].getRChild();
+          else cur = tmp;          
+        }
+      if (cur != d && _nodes[d].distance(cur) < dis)
+        {
+          //cout << cur << endl;
+          count++;
+        }
+    };
+  return count;
+}
+
+bool KdTree::move(int& cur , int d,float dis)
+{
+  int parent = _nodes[cur].getParent();
+  int ax = _nodes[parent].getDepth()%_dim;
+  int d_ax = _nodes[d].getPos(d,ax);
+  int curp_ax = _nodes[parent].getPos(parent,ax);
+
+  if (fabs(d_ax - curp_ax) <= dis)
     {
-      cout << "there may be point on other side" << endl;
-      
+      int rc = _nodes[parent].getRChild();
+      int lc = _nodes[parent].getLChild();              
+      if (d_ax > curp_ax)
+        {
+          if (cur == rc && parent != lc)
+            {
+            cur = lc;
+            return true;
+            }
+          else
+            {
+            cur = parent;
+            return false;
+            }
+        }
+      else
+        {
+          if (cur == lc && parent != rc)
+            {
+            cur = rc;
+            return true;
+            }
+          else
+            {
+            cur = parent;
+            return false;
+            }
+        }
     }
-  };
-  cout << cur << endl;
+  else
+    {
+      cur= parent;
+      return false;
+    }
+}
+
+void KdTree::findWithin(int d,float dis)
+{
+  int count = 0;
+  int cur = _root;
+  count += goDown(cur,d,dis);
+  while (cur != _root)
+    {
+      if (move(cur,d,dis))
+        count += goDown(cur,d,dis);
+    }
+  cout << count << endl;
 }
 
 void KdTree::clearTree()

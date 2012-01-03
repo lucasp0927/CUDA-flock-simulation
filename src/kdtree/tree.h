@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <vector>
 #include <queue>
+#include <stack>
 #include <algorithm>
 #include <math.h>
 #include <iostream>
@@ -39,7 +40,10 @@ class KdTree
  void randInit();
  void* construct_thread(Node* job,struct drand48_data* buffer);
  void construct();
- void findNearest(float* x);
+ bool move(int& cur,int d,float dis);
+ int goDown(int& cur,int d,float dis);
+ void findWithin(int d,float dis);
+ void findWithin_slow(int d,float dis); 
  bool checkTree();
  int getRoot();
  Node* getJob();
@@ -57,6 +61,12 @@ typedef struct{
   Node* job;
   KdTree* myTree;
 } ThreadArgs;
+
+typedef struct{
+  int job;
+  int cur;
+  int first;
+} searchJob;
 
 void* launchThread(void* arg);
 void ConstructTree(int thread_n,KdTree* myTree,pthread_t* thread_handles);
