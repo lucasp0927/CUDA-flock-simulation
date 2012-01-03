@@ -77,6 +77,29 @@ __global__  void convertDir(float* _xyz_dir,float* _ang_dir,int size)
   }
 }
 
+__device__ void calculate(int root,int num,float R,float r,float3* avgRpos,float3* rpos,float3* avgRvel, float3* avgrvel)
+{
+  int cur = root;
+  cur = goDown(cur,num,dis);
+  while (cur != root)
+  {
+    if (move(cur,num,dis))
+      cur = goDown(cur,num,dis);
+  }
+}
+
+__global__ void flockUpdate(float* _pos,float* _xyz_dir,int size)
+{
+  int num = threadIdx.x + blockDim.x * blockIdx.x;
+  if (num < size)
+  {
+    float3 avgRpos,rpos,avgRvel,avgrvel;    
+    calculate(num,R,r,&avgRpoa,&rpos,&avgRvel,&avgrvel);
+    
+  }
+}
+
+
 void FlockSim::update()
 {
     dim3 Grid(Grid_Dim_x, Grid_Dim_y);		//Grid structure

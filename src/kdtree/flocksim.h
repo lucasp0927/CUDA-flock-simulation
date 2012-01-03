@@ -42,4 +42,16 @@ class FlockSim
   int Block_Dim_x,Block_Dim_y,Grid_Dim_x,Grid_Dim_y;
 };
 
+typedef struct 
+{
+  float3 Rpos;
+  float3 rpos;
+  float3 Rvel;
+  float3 rvel;
+}Avg;
+
+typedef struct
+{
+  
+}Para;
 #endif
