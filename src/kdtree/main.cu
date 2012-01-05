@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
   
   // init wall
   WorldGeo wg(3);
-  float ws[6] = {-604.0,604.0,-389.0,389.0,-10.0,10.0};
+  float ws[6] = {-650.0,650.0,-400.0,400.0,-50.0,50.0};
   cout << *(ws+1) << endl;
   wg.setWall(ws);
   //
