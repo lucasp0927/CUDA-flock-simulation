@@ -48,7 +48,8 @@ class KdTree
  int deepest();
  int* getTree() {return Node::getTree(); }
  float* getPos(){return Node::getPos(); }
- float* getDir(){return Node::getDir(); } 
+ float* getDir(){return Node::getDir(); }
+ void depthArray(int* array);
  private:
   Node* _nodes; 
   int _thread_n;

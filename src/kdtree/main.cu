@@ -19,13 +19,18 @@ int main(int argc, char *argv[])
   cout << "size: " << size << endl;
   int thread_number = atoi(argv[2]);        // thread number has to be power of 2
   
-  // init
+  // init wall
   WorldGeo wg(3);
   float ws[6] = {-10.0,10.0,-10.0,10.0,-10.0,10.0};
   wg.setWall(ws);
   //
 
-  FlockSim fs = FlockSim(size,thread_number,wg);
+  //
+  Para para;
+  para.R = 1.0;
+  para.r = 0.3;
+  // 
+  FlockSim fs = FlockSim(size,thread_number,wg,para);
 
 
   fs.initializeGpuData();       // only needed one time

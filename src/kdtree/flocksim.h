@@ -11,10 +11,16 @@
 
 using namespace std;
 
+typedef struct
+{
+  float R,r;
+  /* put other parameters here */
+}Para;
+
 class FlockSim
 {
  public:
-  FlockSim(int size, int thread_n,WorldGeo& wg);
+  FlockSim(int size, int thread_n,WorldGeo& wg,Para para);
   virtual ~FlockSim();
   void makeTree();              /* construct kdtree */
   void update();                /* update data on GPU */
@@ -23,6 +29,7 @@ class FlockSim
   void cpytree2dev();               /* copy tree and data to dev */
   float getPos(int idx,int ax){return Node::getPos(idx,ax);}
   float getDir(int idx,int ax){return _ang_dir[idx*3+ax];}
+  void depthArray();
   //void convertDir(float* _xyz_dir,float* _ang_dir,int size);
  private:
   WorldGeo _wg;
@@ -34,12 +41,16 @@ class FlockSim
   float* _dev_pos;
   int* _dev_tree;
   float* _pos;
+  int* _depth;
+  int* _dev_depth;
   float* _dev_xyz_dir;
   float* _dev_ang_dir;  
   float* _xyz_dir;
   float* _ang_dir;
   int* _tree;
   int Block_Dim_x,Block_Dim_y,Grid_Dim_x,Grid_Dim_y;
+  Para _para;
+  int _root;
 };
 
 typedef struct 
@@ -48,10 +59,7 @@ typedef struct
   float3 rpos;
   float3 Rvel;
   float3 rvel;
+  int count;
 }Avg;
 
-typedef struct
-{
-  
-}Para;
 #endif

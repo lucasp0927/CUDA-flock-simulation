@@ -102,6 +102,8 @@ void Node::separateList()
     _rlist = new vector<int>;
   if (_llist == NULL)
     _llist = new vector<int>;
+  _rlist->reserve(_list->size()/2);
+  _llist->reserve(_list->size()/2);  
   for(vector<int>::iterator it = _list->begin(); it != _list->end(); ++it) {
     if (*it != _idx)
     {

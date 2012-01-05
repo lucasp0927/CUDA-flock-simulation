@@ -335,6 +335,11 @@ int KdTree::deepest()
     }
   return d;
 }
+void KdTree::depthArray(int* arr)
+{
+  for (int i = 0; i < _size; ++i)
+    arr[i] = _nodes[i].getDepth();
+}
 
 void KdTree::clearTree()
 {
