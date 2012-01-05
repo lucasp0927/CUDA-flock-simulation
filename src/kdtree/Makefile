@@ -5,14 +5,15 @@ CUDAPATH = /usr/lib
 
 #NVCCFLAGS = -arch sm_21  -I$(CUDAPATH)/include 
 NVCCFLAGS =   -I$(CUDAPATH)/include 
-LFLAGS = -L$(CUDAPATH)/lib64 -lcuda -lcudart -lm -O3 -lpthread
-GXXFLAG = -O3 -lm -lpthread
+LFLAGS = #-L$(CUDAPATH)/lib64 -lcuda -lcudart -lm -O3 -lpthread
+GXXFLAG = -O3 -lm -lpthread -Xcompiler -fopenmp
+OPENFLAG = -L/usr/lib -lGL -lglut -lGLEW
 
 kdtree:  main.o flocksim.o node.o tree.o
-	$(NVCC) $(NVCCFLAGS) $(LFLAGS) -o kdtree main.o flocksim.o node.o tree.o -lpthread
+	$(NVCC) $(NVCCFLAGS) $(LFLAGS) $(OPENFLAG) -o kdtree main.o flocksim.o node.o tree.o -lpthread
 
 main.o: main.cu
-	$(NVCC) $(NVCCFLAGS) $(LFLAGS) -o main.o -c main.cu
+	$(NVCC) $(NVCCFLAGS) $(LFLAGS) $(OPENFLAG) -o main.o -c main.cu
 
 node.o: node.cu node.h
 	$(NVCC) $(NVCCFLAGS) $(LFLAGS) -o node.o -c node.cu

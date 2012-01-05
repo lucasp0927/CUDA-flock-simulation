@@ -10,18 +10,23 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#include "absGL.cpp"
+
 using namespace std;
+FlockSim *fs;
+int size;
+
 
 int main(int argc, char *argv[])
 {
   assert(argc == 3);
-  int size = atoi(argv[1]);
+  size = atoi(argv[1]);
   cout << "size: " << size << endl;
   int thread_number = atoi(argv[2]);        // thread number has to be power of 2
   
   // init wall
   WorldGeo wg(3);
-  float ws[6] = {-10.0,10.0,-10.0,10.0,-10.0,10.0};
+  float ws[6] = {-604.0,604.0,-389.0,389.0,-10.0,10.0};
   cout << *(ws+1) << endl;
   wg.setWall(ws);
   //
@@ -31,23 +36,24 @@ int main(int argc, char *argv[])
   para.R = 1.0;
   para.r = 0.3;
   // 
-  FlockSim fs = FlockSim(size,thread_number,wg,para);
+  fs =  new FlockSim(size,thread_number,wg,para);
 
 
-  fs.initializeGpuData();       // only needed one time
+  fs->initializeGpuData();       // only needed one time
 // ----------------------------------
   struct timeval start, end;
   long mtime, seconds, useconds;    
   gettimeofday(&start, NULL);
   // ---------------------------------
   // repeat this part
-  fs.makeTree();  
-  fs.cpytree2dev();
-  fs.update();
-  fs.cpy2host();
+  fs->makeTree();  
+  fs->cpytree2dev();
+  fs->update();
+  fs->cpy2host();
   //---------------------
   //RENDER HERE
   //---------------------
+  mainGL(argc,argv);
   //fs.getPos(int index,int XYZ);
   //fs.getDir(int index,int angle_rY_rZ);
 
