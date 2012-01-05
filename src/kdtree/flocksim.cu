@@ -34,7 +34,8 @@ FlockSim::~FlockSim()
   cudaFree(&_dev_pos);         // will render need this mem?
   cudaFree(&_dev_tree);
   cudaFree(&_dev_xyz_dir);
-  cudaFree(&_dev_ang_dir);  
+  cudaFree(&_dev_ang_dir);
+  cudaFree(&_dev_depth);    
   delete [] _ang_dir;
 }
 
@@ -165,13 +166,15 @@ __device__ float dis(int &a, int &b)
   {
     tmp += (getPosAx(a,i)-getPosAx(b,i))*(getPosAx(a,i)-getPosAx(b,i));
   }
-  return sqrt(tmp);
+  return sqrtf(tmp);
 }
 
 __device__ int goDown(int &cur,int& num)
 {
   int ax,tmp;
   int count = 0;
+  if (cur != num && dis(cur,num) < para.R)
+    count++;  
   while(!isEnd(cur))
   {
     ax = getDepth(cur)%3;
@@ -190,7 +193,7 @@ __device__ int goDown(int &cur,int& num)
       else cur = tmp;      
     }
     if (cur != num && dis(cur,num) < para.R)
-      count++;
+       count++;
   }
   return count;
 }
@@ -250,14 +253,6 @@ __device__ void calculateAvg(int num,Avg &avg)
           count += goDown(cur,num);
         }
     }
-  printf("Count %d\n",count);
-  // int cur = root;
-  // cur = goDown(cur,num,dis);n
-  // while (cur != root)
-  // {
-  //   if (move(cur,num,dis))
-  //     cur = goDown(cur,num,dis);
-  // }
 }
 
 __global__ void flockUpdate()
@@ -271,7 +266,6 @@ __global__ void flockUpdate()
     avg.Rvel = make_float3(0,0,0);
     avg.rvel = make_float3(0,0,0);
     avg.count = 0;
-    printf("I am %d \n",num);
     calculateAvg(num,avg);
     // use para variable like para.R para.r
     // if (num == 0)
