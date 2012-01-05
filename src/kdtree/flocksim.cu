@@ -75,7 +75,7 @@ void FlockSim::makeTree()
   _kt->findRoot();  
   _kt->construct();
   ConstructTree(_thread_n,_kt,_thread_handles);
-  _kt->printNodes();
+  //_kt->printNodes();
   // if(_kt->checkTree())
   //   cout << "correct" << endl;
   _root = _kt->getRoot();
@@ -125,6 +125,8 @@ __device__ float3 getPos (int &a)
   return make_float3(pos[a*psize],pos[a*psize+1],pos[a*psize+2]);
 }
 
+__device__ float getPosAx (int &a, int &ax){  return pos[a*psize+ax];}
+
 __device__ void setPos (int &a,float3 &p)
 {
   pos[a*psize] = p.x;
@@ -145,17 +147,110 @@ __device__ void setDIr (int &a,float3 &p)
   xyz_dir[a*3+2] = p.z;  
 }
 
-
-__device__ float distance(int &a, int &b)
+__device__ int getLChild(int &num){  return tree[num*3+1];}
+__device__ int getRChild(int &num){  return tree[num*3+2];}
+__device__ int getParent(int &num){return tree[num*3];}
+__device__ int getDepth(int &num){  return depth[num];}
+__device__ bool isEnd(int &num)
 {
-  float3 tmp = getPos(a)-getPos(b);
-  return sqrt(tmp.x*tmp.x+tmp.y*tmp.y+tmp.z*tmp.z);
+  if (getParent(num)==getLChild(num) && getParent(num)==getRChild(num))
+    return true;
+  else return false;
+}
+
+__device__ float dis(int &a, int &b)
+{
+  float tmp = 0.0;
+  for (int i = 0; i < 3; ++i)
+  {
+    tmp += (getPosAx(a,i)-getPosAx(b,i))*(getPosAx(a,i)-getPosAx(b,i));
+  }
+  return sqrt(tmp);
+}
+
+__device__ int goDown(int &cur,int& num)
+{
+  int ax,tmp;
+  int count = 0;
+  while(!isEnd(cur))
+  {
+    ax = getDepth(cur)%3;
+    if (getPosAx(num,ax)>getPosAx(cur,ax))
+    {
+      tmp = getRChild(cur);
+      if (tmp == cur)
+        cur = getLChild(cur);
+      else cur = tmp;
+    }
+    else
+    {
+      tmp = getLChild(cur);
+      if (tmp == cur)
+        cur = getRChild(cur);
+      else cur = tmp;      
+    }
+    if (cur != num && dis(cur,num) < para.R)
+      count++;
+  }
+  return count;
+}
+__device__ bool move(int &cur,int &num)
+{
+  int parent = getParent(cur);
+  int ax = getDepth(parent)%3;
+  float d_ax = getPosAx(num,ax);
+  float curp_ax = getPosAx(parent,ax);
+  if (fabs(d_ax - curp_ax) <= para.R)
+    {
+      int rc = getRChild(parent);
+      int lc = getLChild(parent);              
+      if (d_ax > curp_ax)
+        {
+          if (cur == rc && parent != lc)
+            {
+              cur = lc;
+              return true;
+            }
+          else
+            {
+              cur = parent;
+              return false;
+            }
+        }
+      else
+        {
+          if (cur == lc && parent != rc)
+            {
+              cur = rc;
+              return true;
+            }
+          else
+            {
+              cur = parent;
+              return false;
+            }
+        }
+    }
+  else
+    {
+      cur= parent;
+      return false;
+    }
 }
 
 __device__ void calculateAvg(int num,Avg &avg)
 {
   int cur = root;
-  
+  int count = 0;
+  count += goDown(cur,num);
+  while (cur != root)
+    {
+      if (move(cur,num))
+        {
+          count += goDown(cur,num);
+        }
+    }
+  printf("Count %d\n",count);
   // int cur = root;
   // cur = goDown(cur,num,dis);n
   // while (cur != root)
@@ -176,15 +271,16 @@ __global__ void flockUpdate()
     avg.Rvel = make_float3(0,0,0);
     avg.rvel = make_float3(0,0,0);
     avg.count = 0;
+    printf("I am %d \n",num);
     calculateAvg(num,avg);
     // use para variable like para.R para.r
-    if (num == 0)
-    {
-      printf("R:%f\n",para.R);
-      printf("r:%f\n",para.r);
-      printf("root:%d\n",root);
-      printf("psize:%d\n",psize);
-    }
+    // if (num == 0)
+    // {
+    //   printf("R:%f\n",para.R);
+    //   printf("r:%f\n",para.r);
+    //   printf("root:%d\n",root);
+    //   printf("psize:%d\n",psize);
+    // }
     
   }
 }
