@@ -44,7 +44,8 @@ class FlockSim
   int* _depth;
   int* _dev_depth;
   float* _dev_xyz_dir;
-  float* _dev_ang_dir;  
+  float* _dev_ang_dir;
+  float* _dev_wall;    
   float* _xyz_dir;
   float* _ang_dir;
   int* _tree;
@@ -59,7 +60,8 @@ typedef struct
   float3 rpos;
   float3 Rvel;
   float3 rvel;
-  int count;
+  int countR;
+  int countr;
 }Avg;
 
 #endif

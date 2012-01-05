@@ -17,7 +17,8 @@ FlockSim::FlockSim(int size, int thread_n,WorldGeo& wg,Para para):_size(size),_t
   cudaMalloc((void**)&_dev_tree,_size*3*sizeof(int));
   cudaMalloc((void**)&_dev_depth,_size*sizeof(int));  
   cudaMalloc((void**)&_dev_xyz_dir,_size*3*sizeof(int));
-  cudaMalloc((void**)&_dev_ang_dir,_size*3*sizeof(int));  
+  cudaMalloc((void**)&_dev_ang_dir,_size*3*sizeof(int));
+  cudaMalloc((void**)&_dev_wall,6*sizeof(float));    
   _ang_dir = new float[_size*3*sizeof(float)];
   // cuda grid sructure
   Block_Dim_x = 512;
@@ -35,7 +36,8 @@ FlockSim::~FlockSim()
   cudaFree(&_dev_tree);
   cudaFree(&_dev_xyz_dir);
   cudaFree(&_dev_ang_dir);
-  cudaFree(&_dev_depth);    
+  cudaFree(&_dev_depth);
+  cudaFree(&_dev_wall);
   delete [] _ang_dir;
 }
 
@@ -43,6 +45,7 @@ void FlockSim::initializeGpuData()
 {
   cudaMemcpy(_dev_pos, _pos, _size*_psize*sizeof(float),cudaMemcpyHostToDevice);
   cudaMemcpy(_dev_xyz_dir, _xyz_dir, _size*3*sizeof(float),cudaMemcpyHostToDevice);
+  cudaMemcpy(_dev_wall, _wg._wall , 6*sizeof(float),cudaMemcpyHostToDevice);  
   cudaMemcpyToSymbol("para", &_para, sizeof(Para), size_t(0),cudaMemcpyHostToDevice);
   cudaMemcpyToSymbol("pos", &_dev_pos, sizeof(float*), size_t(0),cudaMemcpyHostToDevice);
   cudaMemcpyToSymbol("xyz_dir", &_dev_xyz_dir, sizeof(float*), size_t(0),cudaMemcpyHostToDevice);
@@ -50,7 +53,8 @@ void FlockSim::initializeGpuData()
   cudaMemcpyToSymbol("tree", &_dev_tree, sizeof(int*), size_t(0),cudaMemcpyHostToDevice);
   cudaMemcpyToSymbol("depth", &_dev_depth, sizeof(int*), size_t(0),cudaMemcpyHostToDevice);
   cudaMemcpyToSymbol("size", &_size, sizeof(int), size_t(0),cudaMemcpyHostToDevice);
-  cudaMemcpyToSymbol("psize", &_psize, sizeof(int), size_t(0),cudaMemcpyHostToDevice);    
+  cudaMemcpyToSymbol("psize", &_psize, sizeof(int), size_t(0),cudaMemcpyHostToDevice);
+  cudaMemcpyToSymbol("wall", &(_dev_wall), sizeof(float*), size_t(0),cudaMemcpyHostToDevice);      
 }
 
 void FlockSim::cpytree2dev()
@@ -91,6 +95,7 @@ __constant__ int* tree;
 __constant__ int* depth;
 __constant__ int size;
 __constant__ int psize;
+__constant__ float* wall;
 __constant__ int root;          // need to update
 
 
@@ -121,6 +126,10 @@ __device__ float3 operator-(const float3 &a, const float3 &b) {
   return make_float3(a.x-b.x, a.y-b.y, a.z-b.z);
 }
 
+__device__ float3 operator/(const float3 &a, const float &b) {
+  return make_float3(a.x/b, a.y/b, a.z/b);
+}
+
 __device__ float3 getPos (int &a)
 {
   return make_float3(pos[a*psize],pos[a*psize+1],pos[a*psize+2]);
@@ -136,12 +145,12 @@ __device__ void setPos (int &a,float3 &p)
 }
 
 
-__device__ float3 getDIr (int &a)
+__device__ float3 getDir (int &a)
 {
   return make_float3(xyz_dir[a*3],xyz_dir[a*3+1],xyz_dir[a*3+2]);
 }
 
-__device__ void setDIr (int &a,float3 &p)
+__device__ void setDir (int &a,float3 &p)
 {
   xyz_dir[a*3] = p.x;
   xyz_dir[a*3+1] = p.y;
@@ -169,12 +178,24 @@ __device__ float dis(int &a, int &b)
   return sqrtf(tmp);
 }
 
-__device__ int goDown(int &cur,int& num)
+__device__ void goDown(int &cur,int& num,Avg& avg)
 {
   int ax,tmp;
-  int count = 0;
-  if (cur != num && dis(cur,num) < para.R)
-    count++;  
+  float dist;
+  dist = dis(cur,num);
+  if (cur != num &&  dist< para.R)
+  {
+    avg.countR++;
+    avg.Rpos = avg.Rpos + getPos(num);
+    avg.Rvel = avg.Rvel + getDir(num);    
+    if (dist < para.r)
+    {
+      avg.countr++;
+      avg.rpos = avg.rpos + getPos(num)/dist;
+      avg.rvel = avg.rvel + getDir(num);
+    }
+  }
+  
   while(!isEnd(cur))
   {
     ax = getDepth(cur)%3;
@@ -192,10 +213,19 @@ __device__ int goDown(int &cur,int& num)
         cur = getRChild(cur);
       else cur = tmp;      
     }
-    if (cur != num && dis(cur,num) < para.R)
-       count++;
+    if (cur != num &&  dist< para.R)
+    {
+      avg.countR++;
+      avg.Rpos = avg.Rpos + getPos(num);
+      avg.Rvel = avg.Rvel + getDir(num);    
+      if (dist < para.r)
+      {
+        avg.countr++;
+        avg.rpos = avg.rpos + getPos(num)/dist;
+        avg.rvel = avg.rvel + getDir(num);
+      }
+    }
   }
-  return count;
 }
 __device__ bool move(int &cur,int &num)
 {
@@ -204,55 +234,52 @@ __device__ bool move(int &cur,int &num)
   float d_ax = getPosAx(num,ax);
   float curp_ax = getPosAx(parent,ax);
   if (fabs(d_ax - curp_ax) <= para.R)
+  {
+    int rc = getRChild(parent);
+    int lc = getLChild(parent);              
+    if (d_ax > curp_ax)
     {
-      int rc = getRChild(parent);
-      int lc = getLChild(parent);              
-      if (d_ax > curp_ax)
-        {
-          if (cur == rc && parent != lc)
-            {
-              cur = lc;
-              return true;
-            }
-          else
-            {
-              cur = parent;
-              return false;
-            }
-        }
+      if (cur == rc && parent != lc)
+      {
+        cur = lc;
+        return true;
+      }
       else
-        {
-          if (cur == lc && parent != rc)
-            {
-              cur = rc;
-              return true;
-            }
-          else
-            {
-              cur = parent;
-              return false;
-            }
-        }
+      {
+        cur = parent;
+        return false;
+      }
     }
-  else
+    else
     {
-      cur= parent;
-      return false;
+      if (cur == lc && parent != rc)
+      {
+        cur = rc;
+        return true;
+      }
+      else
+      {
+        cur = parent;
+        return false;
+      }
     }
+  }
+  else
+  {
+    cur= parent;
+    return false;
+  }
 }
 
 __device__ void calculateAvg(int num,Avg &avg)
 {
   int cur = root;
-  int count = 0;
-  count += goDown(cur,num);
+  goDown(cur,num,avg);
   while (cur != root)
-    {
-      if (move(cur,num))
-        {
-          count += goDown(cur,num);
-        }
-    }
+  {
+    if (move(cur,num))
+      goDown(cur,num,avg);
+  }
 }
 
 __global__ void flockUpdate()
@@ -265,24 +292,29 @@ __global__ void flockUpdate()
     avg.rpos = make_float3(0,0,0);
     avg.Rvel = make_float3(0,0,0);
     avg.rvel = make_float3(0,0,0);
-    avg.count = 0;
+    avg.countR = 0;
+    avg.countr = 0;    
     calculateAvg(num,avg);
-    // use para variable like para.R para.r
-    // if (num == 0)
-    // {
-    //   printf("R:%f\n",para.R);
-    //   printf("r:%f\n",para.r);
-    //   printf("root:%d\n",root);
-    //   printf("psize:%d\n",psize);
-    // }
+    avg.Rpos = avg.Rpos/avg.countR;
+    avg.Rvel = avg.Rvel/avg.countR;
+    avg.rpos = avg.rpos/avg.countr;
+    avg.rvel = avg.rvel/avg.countr;
+    // -----------------------------
+    // please update position here
+    //------------------------------
+    // avg.Rpos average position within R
+    // avg.rpos pos/r  position within r
+    // avg.Rvel average velocity within R
+    // avg.rvel average velocity within r    
+    // above variable are float3. 
     
   }
 }
 
 void FlockSim::update()
 {
-    dim3 Grid(Grid_Dim_x, Grid_Dim_y);		//Grid structure
-    dim3 Block(Block_Dim_x,Block_Dim_y);	//Block structure, threads/block limited by specific device
-    flockUpdate<<<Grid,Block>>>();
-    convertDir<<<Grid,Block>>>(); // convert xyz velocity to angle
+  dim3 Grid(Grid_Dim_x, Grid_Dim_y);		//Grid structure
+  dim3 Block(Block_Dim_x,Block_Dim_y);	//Block structure, threads/block limited by specific device
+  flockUpdate<<<Grid,Block>>>();
+  convertDir<<<Grid,Block>>>(); // convert xyz velocity to angle
 }

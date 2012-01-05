@@ -23,9 +23,9 @@ class WorldGeo
   void setWall(float* wall);
   int getDim();
   float getWall(int dim,int m);
+  float* _wall;                  // order in minx maxx miny maxy ...  
  private:
   int _dim;
-  float* _wall;                  // order in minx maxx miny maxy ...
 };
 
 class KdTree
