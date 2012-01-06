@@ -130,6 +130,10 @@ __device__ float3 operator/(const float3 &a, const float &b) {
   return make_float3(a.x/b, a.y/b, a.z/b);
 }
 
+__device__ float3 operator*(const float3 &a, const float &b) {
+  return make_float3(a.x*b, a.y*b, a.z*b);
+}
+
 __device__ float3 getPos (int &a)
 {
   return make_float3(pos[a*psize],pos[a*psize+1],pos[a*psize+2]);
@@ -137,7 +141,7 @@ __device__ float3 getPos (int &a)
 
 __device__ float getPosAx (int &a, int &ax){  return pos[a*psize+ax];}
 
-__device__ void setPos (int &a,float3 &p)
+__device__ void setPos (int &a,float3 p)
 {
   pos[a*psize] = p.x;
   pos[a*psize+1] = p.y;
@@ -281,12 +285,28 @@ __device__ void calculateAvg(int num,Avg &avg)
       goDown(cur,num,avg);
   }
 }
+__device__ void wallCheck(int& num,float3 &pos,float3 &dir)
+{
+  if(pos.x < wall[0] || pos.x > wall[1])
+    dir.x = dir.x*-1.0;
+  if(pos.y < wall[2] || pos.y > wall[3])
+    dir.y = dir.y*-1.0;
+  if(pos.z < wall[4] || pos.z > wall[5])
+    dir.z = dir.z*-1.0;  
+}
+
 
 __global__ void flockUpdate()
 {
   int num = threadIdx.x + blockDim.x * blockIdx.x;
   if (num < size)
   {
+    float3 tmp;
+    float3 tmpv;
+    tmp = getPos(num);
+    tmpv = getDir(num);
+    wallCheck(num,tmp,tmpv);
+    __syncthreads();
     Avg avg;
     avg.Rpos = make_float3(0,0,0);
     avg.rpos = make_float3(0,0,0);
@@ -306,9 +326,22 @@ __global__ void flockUpdate()
     // avg.rpos pos/r  position within r
     // avg.Rvel average velocity within R
     // avg.rvel average velocity within r    
-    // above variable are float3. 
-    
+    // above variable are float3.
+    // wall[0~5]
+    // if (avg.countR>0)
+    // {
+    //   tmpv = make_float3(0,0,0);
+    // }
+    // if (avg.countr>0)
+    // {
+    //   tmpv = tmpv + avg.rpos*para.S;
+    // }
+    tmp = tmp+(tmpv*para.dt);
+    setPos(num,tmp);
+    setDir(num,tmpv);    
   }
+  
+  __syncthreads();
 }
 
 void FlockSim::update()

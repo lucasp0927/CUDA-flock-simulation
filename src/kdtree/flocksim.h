@@ -13,7 +13,7 @@ using namespace std;
 
 typedef struct
 {
-  float R,r;
+  float R,r,dt,C,A,S;
   /* put other parameters here */
 }Para;
 
@@ -31,9 +31,11 @@ class FlockSim
   float getDir(int idx,int ax){return _ang_dir[idx*3+ax];}
   void depthArray();
   //void convertDir(float* _xyz_dir,float* _ang_dir,int size);
+
+
  private:
   WorldGeo _wg;
-  KdTree*   _kt;
+  KdTree*   _kt;  
   int      _psize;
   int       _size;
   int      _thread_n;

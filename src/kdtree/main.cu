@@ -22,46 +22,31 @@ int main(int argc, char *argv[])
   assert(argc == 3);
   size = atoi(argv[1]);
   cout << "size: " << size << endl;
-  int thread_number = atoi(argv[2]);        // thread number has to be power of 2
-  
+  int thread_number = atoi(argv[2]);
   // init wall
   WorldGeo wg(3);
   float ws[6] = {-650.0,650.0,-400.0,400.0,-50.0,50.0};
   cout << *(ws+1) << endl;
   wg.setWall(ws);
-  //
-
-  //
+  //parameters
   Para para;
   para.R = 1.0;
   para.r = 0.3;
+  para.dt = 1;
+  para.C = 1.0;
+  para.A = 1.0;
+  para.S = 1.0;
   // 
   fs =  new FlockSim(size,thread_number,wg,para);
-
-
   fs->initializeGpuData();       // only needed one time
-// ----------------------------------
-  struct timeval start, end;
-  long mtime, seconds, useconds;    
-  gettimeofday(&start, NULL);
-  // ---------------------------------
-  // repeat this part
-  fs->makeTree();  
-  fs->cpytree2dev();
-  fs->update();
-  fs->cpy2host();
-  //---------------------
-  //RENDER HERE
-  //---------------------
   mainGL(argc,argv);
-  //fs.getPos(int index,int XYZ);
-  //fs.getDir(int index,int angle_rY_rZ);
-
-  // ----------------------------------------
-  gettimeofday(&end, NULL);
-  seconds  = end.tv_sec  - start.tv_sec;
-  useconds = end.tv_usec - start.tv_usec;
-  mtime = ((seconds) * 1000 + useconds/1000.0) + 0.5;
-  printf("Elapsed time: %ld milliseconds\n", mtime);
-  // -----------------------------------------  
+  // while(true)
+  // {
+  // fs->makeTree();
+  // fs->cpytree2dev();
+  // fs->update();
+  // fs->cpy2host();    
+  // }
+  
+  //    display();
 }
