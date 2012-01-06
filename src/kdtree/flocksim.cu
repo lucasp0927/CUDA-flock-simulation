@@ -39,6 +39,7 @@ FlockSim::~FlockSim()
   cudaFree(&_dev_depth);
   cudaFree(&_dev_wall);
   delete [] _ang_dir;
+  delete [] _depth;
 }
 
 void FlockSim::initializeGpuData()
@@ -84,7 +85,6 @@ void FlockSim::makeTree()
   // if(_kt->checkTree())
   //   cout << "correct" << endl;
   _root = _kt->getRoot();
-  depthArray();
 }
 
 __constant__ Para para;
@@ -167,19 +167,16 @@ __device__ int getParent(int &num){return tree[num*3];}
 __device__ int getDepth(int &num){  return depth[num];}
 __device__ bool isEnd(int &num)
 {
-  if (getParent(num)==getLChild(num) && getParent(num)==getRChild(num))
+  if (num==getLChild(num) && num==getRChild(num))
     return true;
   else return false;
 }
 
 __device__ float dis(int &a, int &b)
 {
-  float tmp = 0.0;
-  for (int i = 0; i < 3; ++i)
-  {
-    tmp += (getPosAx(a,i)-getPosAx(b,i))*(getPosAx(a,i)-getPosAx(b,i));
-  }
-  return sqrtf(tmp);
+  float3 tmp = getPos(a)- getPos(b);
+  float d = tmp.x*tmp.x + tmp.y*tmp.y + tmp.z*tmp.z;
+  return sqrtf(d);
 }
 
 __device__ void goDown(int &cur,int& num,Avg& avg)
@@ -217,6 +214,7 @@ __device__ void goDown(int &cur,int& num,Avg& avg)
         cur = getRChild(cur);
       else cur = tmp;      
     }
+    dist = dis(cur,num);    
     if (cur != num &&  dist< para.R)
     {
       avg.countR++;
@@ -275,6 +273,17 @@ __device__ bool move(int &cur,int &num)
   }
 }
 
+__device__ float3 normalize(float3 a)
+{
+  float tx,ty,tz;
+  float t;
+  t = sqrt(a.x*a.x+a.y*a.y+a.z*a.z);
+  tx = a.x/t;
+  ty = a.y/t;
+  tz = a.z/t;
+  return make_float3(tx,ty,tz);
+}
+
 __device__ void calculateAvg(int num,Avg &avg)
 {
   int cur = root;
@@ -328,14 +337,15 @@ __global__ void flockUpdate()
     // avg.rvel average velocity within r    
     // above variable are float3.
     // wall[0~5]
-    // if (avg.countR>0)
-    // {
-    //   tmpv = make_float3(0,0,0);
-    // }
-    // if (avg.countr>0)
-    // {
-    //   tmpv = tmpv + avg.rpos*para.S;
-    // }
+    if (avg.countR>0)
+    {
+      tmpv = normalize(tmpv + normalize(avg.Rpos - tmp)*para.C);
+      tmpv = normalize(tmpv + normalize(avg.Rvel)*para.A);      
+    }
+    if (avg.countr>0)
+    {
+      tmpv = normalize(tmpv + normalize(avg.rpos)*para.S);
+    }
     tmp = tmp+(tmpv*para.dt);
     setPos(num,tmp);
     setDir(num,tmpv);    

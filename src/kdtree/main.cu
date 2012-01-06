@@ -26,26 +26,26 @@ int main(int argc, char *argv[])
   // init wall
   WorldGeo wg(3);
   float ws[6] = {-650.0,650.0,-400.0,400.0,-50.0,50.0};
-  cout << *(ws+1) << endl;
   wg.setWall(ws);
   //parameters
   Para para;
-  para.R = 1.0;
-  para.r = 0.3;
-  para.dt = 1;
-  para.C = 1.0;
-  para.A = 1.0;
-  para.S = 1.0;
+  para.R = 10.0;
+  para.r = 3.0;
+  para.dt = 0.01;
+  para.C = 5.0;
+  para.A = 3.0;
+  para.S = 0.1;
   // 
   fs =  new FlockSim(size,thread_number,wg,para);
   fs->initializeGpuData();       // only needed one time
   mainGL(argc,argv);
   // while(true)
   // {
-  // fs->makeTree();
-  // fs->cpytree2dev();
-  // fs->update();
-  // fs->cpy2host();    
+  //   fs->_kt->randInit();    
+  //   fs->makeTree();
+  //   fs->cpytree2dev();
+  //   fs->update();
+  //   fs->cpy2host();
   // }
   
   //    display();

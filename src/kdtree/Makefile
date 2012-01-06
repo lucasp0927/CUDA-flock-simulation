@@ -12,7 +12,7 @@ OPENFLAG = -L/usr/lib -lGL -lglut -lGLEW
 kdtree:  main.o flocksim.o node.o tree.o
 	$(NVCC) $(NVCCFLAGS) $(LFLAGS) $(OPENFLAG) -o kdtree main.o flocksim.o node.o tree.o -lpthread
 
-main.o: main.cu
+main.o: main.cu absGL.cpp
 	$(NVCC) $(NVCCFLAGS) $(LFLAGS) $(OPENFLAG) -o main.o -c main.cu
 
 node.o: node.cu node.h
@@ -23,10 +23,6 @@ tree.o: tree.cu tree.h
 
 flocksim.o: flocksim.cu flocksim.h tree.o node.o
 	$(NVCC) $(NVCCFLAGS) $(LFLAGS) -o flocksim.o -c flocksim.cu
-
-
-#kdtree.o: kdtree.cu kdtree.h
-#	$(NVCC) $(NVCCFLAGS) $(LFLAGS) -o kdtree.o -c  kdtree.cu
 
 clean:
 	rm *.o

@@ -32,10 +32,10 @@ class FlockSim
   void depthArray();
   //void convertDir(float* _xyz_dir,float* _ang_dir,int size);
 
-
+  KdTree*   _kt;  
  private:
   WorldGeo _wg;
-  KdTree*   _kt;  
+
   int      _psize;
   int       _size;
   int      _thread_n;
