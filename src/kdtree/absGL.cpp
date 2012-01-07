@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <iostream>
+#include <pthread.h>
 //#include <GL/glut.h>
 #include <GL/glew.h>
 #include <GL/glut.h>
@@ -164,7 +165,19 @@ void printBorder(){
 }
 
 
+void* mtree(void* i)
+{
+    fs->makeTree();
+    return NULL;
+}
+
+
+
 void display() {
+  pthread_t thread1;
+	 
+  pthread_create( &thread1, NULL, &mtree, NULL);
+
   fpscal();
   glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
@@ -172,58 +185,32 @@ void display() {
 
   glTranslatef(0,0,-(Border[1]*1.2));
   glRotatef(boxangleY,1,0,0);
-//  glRotatef(boxangleX,0,1,0);  
-  //  glLoadIdentity();
-  //    gluLookAt(0,0,5,0,0,0,0,1,0);
-  //glBufferData(GL_ARRAY_BUFFER,size*2*sizeof(float),position,GL_DYNAMIC_DRAW);
-  //    glBegin(GL_POINTS);
   glColor3f(1.0f,1.0f,1.0f);
 
-  //glutWireTeapot(3);
   glEnableClientState(GL_VERTEX_ARRAY);
   glVertexPointer(3,GL_FLOAT,0,Vertices);
-  //  #pragma omp parallel for   
+  
   for(int i=0;i<size;i++){
-       
     glPushMatrix();
-    //	printf("x:%f\n",fs->getPos(i,0));
     glTranslated(2*fs->getPos(i,0)/Ratio,2*fs->getPos(i,1)/Ratio,2*fs->getPos(i,2)/Ratio);
-    //glDirToRotate(bird[i].dX(),bird[i].dY(),bird[i].dZ());
     if(i==1)   { 
-//	printf("P%d: %f %f %f\n",i,fs->getPos(i,0),fs->getPos(i,1),fs->getPos(i,2));
-//	printf("D%d: %f %f %f\n",i,fs->getDir(i,0),fs->getDir(i,1),fs->getDir(i,2));
 	}
     glRotatef(fs->getDir(i,0),0,fs->getDir(i,1),fs->getDir(i,2)); 
-    // glTranslated(bird[i].X()/5,bird[i].Y()/5,-2);
-    //  glDrawElements(GL_TRIANGLES,12,GL_UNSIGNED_BYTE,Vindex);    
     glDrawArrays(GL_LINES,0,12);
     glPopMatrix();
-    // bird[i].move();
   }
-  fs->makeTree();
-  fs->cpytree2dev();
-  fs->update();
-  fs->cpy2host();
-  //    #pragma omp parallel for 
-  //   for(int i=0;i<size;i++){
-  //       printf("%d bird %d\n",omp_get_thread_num(),i);   
-  //       bird[i].move();
-  //      bird[i].calR();
-  //  }
+  
   glDisableClientState(GL_VERTEX_ARRAY);
   printfps();
   printBorder();
-  // updateposition();
-  // for(int i=0;i<size;i++){
-  //if(i==0){      printf("x=%f y=%f\n",bird[i].X(),bird[i].Y());}
-  //        glVertex2f(2*bird[i].X()/W,2*bird[i].Y()/H);
-  //	bird[i].move();
-  //bird[i].turns(0.5);
-  //  }        
-  //  glEnd();
   glPopMatrix();
   glutSwapBuffers();
-  // glFinish();
+  
+  pthread_join( thread1, NULL);
+  fs->cpytree2dev();
+  fs->update();
+  fs->cpy2host();
+
 }
 
 void reshape(int w,int h){
@@ -242,24 +229,24 @@ void reshape(int w,int h){
 
 
 void mouse(int button,int state,int x,int y){
-     Xmouse=x;
-     Ymouse=y;
-     if(button==GLUT_LEFT_BUTTON){
+  Xmouse=x;
+  Ymouse=y;
+  if(button==GLUT_LEFT_BUTTON){
 	if(state==GLUT_DOWN){
-		mouseLeftDown=true;
+      mouseLeftDown=true;
 	}
-        else if(state==GLUT_UP){
-		mouseLeftDown=false;
+    else if(state==GLUT_UP){
+      mouseLeftDown=false;
 	}
-     }
+  }
 
 }
 
 void mouseM(int x,int y){
-     if(mouseLeftDown){
-          boxangleY+=(y-Ymouse)/100;
-          boxangleX+=(x-Xmouse)/100;
-     }
+  if(mouseLeftDown){
+    boxangleY+=(y-Ymouse)/100;
+    boxangleX+=(x-Xmouse)/100;
+  }
 }
 
 // cudaMalloc((void**)&d_a, sizeof(h_a));
@@ -278,23 +265,13 @@ void mainGL(int argc,char **argv,float* border){
   boxangleY=-70;
   mouseLeftDown=false;
   for(int i=0;i<6;i++){
-        Border[i]=border[i]+2/Ratio;
+    Border[i]=border[i]+2/Ratio;
   }
 
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_RGBA|GLUT_DEPTH|GLUT_DOUBLE);
   glutInitWindowSize(W, H);
   glutCreateWindow("projecttest");
-
-  //    glGenBuffers(1,&positionVBO);
-
-  //printf("fuck!\n");
-  //    glBindBuffer(GL_ARRAY_BUFFER,positionVBO);
-  //    glBufferData(GL_ARRAY_BUFFER,size*2*sizeof(float),0,GL_DYNAMIC_DRAW);
-    
-  //printf("fuck!\n");
-
-       
   glutDisplayFunc(display);
   glutReshapeFunc(reshape);
   glutIdleFunc(idle);
@@ -302,6 +279,4 @@ void mainGL(int argc,char **argv,float* border){
   glutMotionFunc(mouseM);
   initGL();
   glutMainLoop();
-
-
 }

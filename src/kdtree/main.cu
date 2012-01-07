@@ -10,11 +10,12 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#include "absGL.cpp"
+
 
 using namespace std;
 FlockSim *fs;
 int size;
+#include "absGL.cpp"
 
 
 int main(int argc, char *argv[])
@@ -39,8 +40,10 @@ int main(int argc, char *argv[])
   fs =  new FlockSim(size,thread_number,wg,para);
   fs->initializeGpuData();       // only needed one time
   fs->_kt->randInit();       // only needed one time
-
+  fs->makeTree();
   mainGL(argc,argv,ws);
+
+
   // while(true)
   // {
   //   fs->_kt->randInit();    
@@ -49,6 +52,5 @@ int main(int argc, char *argv[])
   //   fs->update();
   //   fs->cpy2host();
   // }
-  
-  //    display();
+
 }
