@@ -170,7 +170,7 @@ void display() {
 
   glPushMatrix();
 
-  glTranslatef(0,0,-900);
+  glTranslatef(0,0,-(Border[1]*1.2));
   glRotatef(boxangleY,1,0,0);
 //  glRotatef(boxangleX,0,1,0);  
   //  glLoadIdentity();
@@ -229,7 +229,8 @@ void display() {
 void reshape(int w,int h){
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  glFrustum(-W/Ratio,W/Ratio,-H/Ratio,H/Ratio,100,2000);
+  
+  glFrustum(-W/Ratio,W/Ratio,-H/Ratio,H/Ratio,600,600+(Border[1]+50)*2);
   //   glOrtho(-W/10,W/10,-H/10,H/10,-100,100);
   //    glRotatef(-30,1,0,0);
   //     glTranslated(0,0,-10);
