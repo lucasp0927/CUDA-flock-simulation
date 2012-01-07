@@ -167,6 +167,7 @@ void printBorder(){
 
 void* mtree(void* i)
 {
+  fs->_kt->clearTree();
     fs->makeTree();
     return NULL;
 }

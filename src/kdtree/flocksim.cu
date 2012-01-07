@@ -18,8 +18,10 @@ FlockSim::FlockSim(int size, int thread_n,WorldGeo& wg,Para para):_size(size),_t
   cudaMalloc((void**)&_dev_depth,_size*sizeof(int));  
   cudaMalloc((void**)&_dev_xyz_dir,_size*3*sizeof(int));
   cudaMalloc((void**)&_dev_ang_dir,_size*3*sizeof(int));
-  cudaMalloc((void**)&_dev_wall,6*sizeof(float));    
+  cudaMalloc((void**)&_dev_wall,6*sizeof(float));
+  cudaMalloc((void**)&_dev_isend,_size*sizeof(int));    
   _ang_dir = new float[_size*3*sizeof(float)];
+
   // cuda grid sructure
   Block_Dim_x = 128;
   Block_Dim_y = 1;  
@@ -34,6 +36,7 @@ FlockSim::~FlockSim()
 {
   cudaFree(&_dev_pos);         // will render need this mem?
   cudaFree(&_dev_tree);
+  cudaFree(&_dev_isend);  
   cudaFree(&_dev_xyz_dir);
   cudaFree(&_dev_ang_dir);
   cudaFree(&_dev_depth);
@@ -55,7 +58,8 @@ void FlockSim::initializeGpuData()
   cudaMemcpyToSymbol("depth", &_dev_depth, sizeof(int*), size_t(0),cudaMemcpyHostToDevice);
   cudaMemcpyToSymbol("size", &_size, sizeof(int), size_t(0),cudaMemcpyHostToDevice);
   cudaMemcpyToSymbol("psize", &_psize, sizeof(int), size_t(0),cudaMemcpyHostToDevice);
-  cudaMemcpyToSymbol("wall", &(_dev_wall), sizeof(float*), size_t(0),cudaMemcpyHostToDevice);      
+  cudaMemcpyToSymbol("wall", &(_dev_wall), sizeof(float*), size_t(0),cudaMemcpyHostToDevice);
+  cudaMemcpyToSymbol("isend", &_dev_isend, sizeof(int*), size_t(0),cudaMemcpyHostToDevice);  
 }
 
 void FlockSim::cpytree2dev()
@@ -97,7 +101,7 @@ __constant__ int size;
 __constant__ int psize;
 __constant__ float* wall;
 __constant__ int root;          // need to update
-
+__constant__ int* isend;
 
 
 __global__  void convertDir()
@@ -139,14 +143,14 @@ __device__ float3 operator*(const float3 &a, const float &b) {
   return make_float3(a.x*b, a.y*b, a.z*b);
 }
 
-__device__ float3 getPos (int &a)
+inline __device__ float3 getPos (int &a)
 {
   return make_float3(pos[a*psize],pos[a*psize+1],pos[a*psize+2]);
 }
 
-__device__ float getPosAx (int &a, int &ax){  return pos[a*psize+ax];}
+inline __device__ float getPosAx (int &a, int &ax){  return pos[a*psize+ax];}
 
-__device__ void setPos (int &a,float3 p)
+inline __device__ void setPos (int &a,float3 p)
 {
   pos[a*psize] = p.x;
   pos[a*psize+1] = p.y;
@@ -154,34 +158,47 @@ __device__ void setPos (int &a,float3 p)
 }
 
 
-__device__ float3 getDir (int &a)
+inline __device__ float3 getDir (int &a)
 {
   return make_float3(xyz_dir[a*3],xyz_dir[a*3+1],xyz_dir[a*3+2]);
 }
 
-__device__ void setDir (int &a,float3 &p)
+inline __device__ void setDir (int &a,float3 &p)
 {
   xyz_dir[a*3] = p.x;
   xyz_dir[a*3+1] = p.y;
   xyz_dir[a*3+2] = p.z;  
 }
 
-__device__ int getLChild(int &num){  return tree[num*3+1];}
-__device__ int getRChild(int &num){  return tree[num*3+2];}
-__device__ int getParent(int &num){return tree[num*3];}
-__device__ int getDepth(int &num){  return depth[num];}
-__device__ bool isEnd(int &num)
+inline __device__ int getLChild(int &num){  return tree[num*3+1];}
+inline __device__ int getRChild(int &num){  return tree[num*3+2];}
+inline __device__ int getParent(int &num){return tree[num*3];}
+inline __device__ int getDepth(int &num){  return depth[num];}
+inline __device__ bool isEnd(int &num)
 {
-  if (num==getLChild(num) && num==getRChild(num))
+  if (isend[num] == 1) return true;
+  else if (isend[num] == 0) return false;
+  else if (num==getLChild(num) && num==getRChild(num))
+  {
+    isend[num] = 1;
     return true;
-  else return false;
+  }
+  else
+  {
+    isend[num] = 0;
+    return false;
+  }
 }
 
-__device__ float dis(int &a, int &b)
+inline __host__ __device__ float dot(float3 a, float3 b)
+{ 
+    return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
+inline __device__ float dis(int &a, int &b)
 {
   float3 tmp = getPos(a)- getPos(b);
-  float d = tmp.x*tmp.x + tmp.y*tmp.y + tmp.z*tmp.z;
-  return sqrtf(d);
+  return sqrtf(dot(tmp, tmp));  
 }
 
 __device__ void goDown(int &cur,int& num,Avg& avg)
@@ -280,21 +297,27 @@ __device__ bool move(int &cur,int &num)
   }
 }
 
-__device__ float3 normalize(float3 a)
+// normalize
+inline __host__ __device__ float3 normalize(float3 v)
 {
-  float tx,ty,tz;
-  float t;
-  t = sqrt(a.x*a.x+a.y*a.y+a.z*a.z);
-  if(t!=0){
-  tx = a.x/t;
-  ty = a.y/t;
-  tz = a.z/t;
-  }
-  else{
-  tx=0,ty=0,tz=0;
-  }
-  return make_float3(tx,ty,tz);
+    float invLen = 1.0f / sqrtf(dot(v, v));
+    return v * invLen;
 }
+// __device__ float3 normalize(float3 a)
+// {
+//   float tx,ty,tz;
+//   float t;
+//   t = sqrt(a.x*a.x+a.y*a.y+a.z*a.z);
+//   if(t!=0){
+//   tx = a.x/t;
+//   ty = a.y/t;
+//   tz = a.z/t;
+//   }
+//   else{
+//   tx=0,ty=0,tz=0;
+//   }
+//   return make_float3(tx,ty,tz);
+// }
 
 __device__ void calculateAvg(int num,Avg &avg)
 {
@@ -329,6 +352,17 @@ __device__ void wallCheck(int& num,float3 &pos,float3 &dir)
     pos.z=wall[5];
 }
 
+
+
+__global__ void initIsend()
+{
+  int num = threadIdx.x + blockDim.x * blockIdx.x;
+  if (num < size)
+  {
+    isend[num] = 2;
+  }
+  __syncthreads();
+}
 
 __global__ void flockUpdate()
 {
@@ -400,6 +434,7 @@ void FlockSim::update()
 {
   dim3 Grid(Grid_Dim_x, Grid_Dim_y);		//Grid structure
   dim3 Block(Block_Dim_x,Block_Dim_y);	//Block structure, threads/block limited by specific device
+  initIsend<<<Grid,Block>>>();  
   flockUpdate<<<Grid,Block>>>();
   convertDir<<<Grid,Block>>>(); // convert xyz velocity to angle
 }

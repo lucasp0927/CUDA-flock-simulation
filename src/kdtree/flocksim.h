@@ -50,6 +50,7 @@ class FlockSim
   float* _dev_wall;    
   float* _xyz_dir;
   float* _ang_dir;
+  int* _dev_isend;  
   int* _tree;
   int Block_Dim_x,Block_Dim_y,Grid_Dim_x,Grid_Dim_y;
   Para _para;

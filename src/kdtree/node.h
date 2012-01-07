@@ -1,6 +1,6 @@
 #ifndef NODE_H_
 #define NODE_H_
-//#define NDEBUG
+#define NDEBUG
 #include <stdlib.h>
 #include <vector>
 #include <algorithm>
@@ -68,12 +68,12 @@ class Node
   void setChild(Node* left,Node* right);
   void clear();
   friend ostream& operator <<(ostream &os,Node& n);
-  
+  static int _size;  
  private:
   int _idx;
 
   static int _psize;
-  static int _size;
+
   static int _dim;  
   static bool _static_init;
   static int* _depth;  
