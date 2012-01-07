@@ -25,23 +25,20 @@ int main(int argc, char *argv[])
   int thread_number = atoi(argv[2]);
   // init wall
   WorldGeo wg(3);
-  float ws[6] = {-650.0,650.0,-400.0,400.0,-50.0,50.0};
+  float ws[6] = {-650.0,650.0,-400.0,400.0,-100.0,100.0};
   wg.setWall(ws);
   //parameters
   Para para;
-  para.R = 10.0;
-  para.r = 3.0;
-  para.dt = 0.5;
-  para.C = 1.0;
-  para.A = 1.0;
-  para.S = 1.0;
+  para.R = 100.0;
+  para.r = 20.0;
+  para.dt = 1.2;
+  para.C = 10.0;
+  para.A = 5.0;
+  para.S = 4;
   // 
   fs =  new FlockSim(size,thread_number,wg,para);
   fs->initializeGpuData();       // only needed one time
-  
-  fs->_kt->randInit();    
-  //fs->makeTree();  
-  mainGL(argc,argv);
+  mainGL(argc,argv,ws);
   // while(true)
   // {
   //   fs->_kt->randInit();    

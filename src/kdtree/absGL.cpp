@@ -24,6 +24,7 @@ int timeo,timen,frame,fps;
 extern FlockSim *fs;
 extern int size;
 
+float Border[6];
 
 GLfloat Vertices[]={
   2,0,0, -1,1,0, 
@@ -103,6 +104,50 @@ void printfps(){
 
 }
 
+void printBorder(){
+  glPushMatrix();
+  glBegin(GL_LINES);
+  glColor3f(1.0f,0,0);
+  glVertex3f(2*Border[0]/Ratio,2*Border[2]/Ratio,2*Border[4]/Ratio);
+  glVertex3f(2*Border[0]/Ratio,2*Border[3]/Ratio,2*Border[4]/Ratio);
+
+  glVertex3f(2*Border[0]/Ratio,2*Border[2]/Ratio,2*Border[4]/Ratio);
+  glVertex3f(2*Border[0]/Ratio,2*Border[2]/Ratio,2*Border[5]/Ratio);
+
+  glVertex3f(2*Border[0]/Ratio,2*Border[2]/Ratio,2*Border[4]/Ratio);
+  glVertex3f(2*Border[1]/Ratio,2*Border[2]/Ratio,2*Border[4]/Ratio);
+
+  glVertex3f(2*Border[1]/Ratio,2*Border[2]/Ratio,2*Border[4]/Ratio);
+  glVertex3f(2*Border[1]/Ratio,2*Border[3]/Ratio,2*Border[4]/Ratio);
+
+  glVertex3f(2*Border[1]/Ratio,2*Border[2]/Ratio,2*Border[4]/Ratio);
+  glVertex3f(2*Border[1]/Ratio,2*Border[2]/Ratio,2*Border[5]/Ratio);
+
+  glVertex3f(2*Border[1]/Ratio,2*Border[2]/Ratio,2*Border[5]/Ratio);
+  glVertex3f(2*Border[1]/Ratio,2*Border[3]/Ratio,2*Border[5]/Ratio);
+
+  glVertex3f(2*Border[1]/Ratio,2*Border[2]/Ratio,2*Border[5]/Ratio);
+  glVertex3f(2*Border[0]/Ratio,2*Border[2]/Ratio,2*Border[5]/Ratio);
+
+  glVertex3f(2*Border[0]/Ratio,2*Border[2]/Ratio,2*Border[5]/Ratio);
+  glVertex3f(2*Border[0]/Ratio,2*Border[3]/Ratio,2*Border[5]/Ratio);
+
+  glVertex3f(2*Border[0]/Ratio,2*Border[3]/Ratio,2*Border[5]/Ratio);
+  glVertex3f(2*Border[0]/Ratio,2*Border[3]/Ratio,2*Border[4]/Ratio);
+
+  glVertex3f(2*Border[0]/Ratio,2*Border[3]/Ratio,2*Border[4]/Ratio);
+  glVertex3f(2*Border[1]/Ratio,2*Border[3]/Ratio,2*Border[4]/Ratio);
+
+  glVertex3f(2*Border[1]/Ratio,2*Border[3]/Ratio,2*Border[4]/Ratio);
+  glVertex3f(2*Border[1]/Ratio,2*Border[3]/Ratio,2*Border[5]/Ratio);
+
+  glVertex3f(2*Border[1]/Ratio,2*Border[3]/Ratio,2*Border[5]/Ratio);
+  glVertex3f(2*Border[0]/Ratio,2*Border[3]/Ratio,2*Border[5]/Ratio);
+
+  glEnd();
+  glPopMatrix();
+}
+
 
 void display() {
   fpscal();
@@ -126,9 +171,12 @@ void display() {
        
     glPushMatrix();
     //	printf("x:%f\n",fs->getPos(i,0));
-    glTranslated(2*fs->getPos(i,0)/Ratio,2*fs->getPos(i,1)/Ratio,fs->getPos(i,2));
+    glTranslated(2*fs->getPos(i,0)/Ratio,2*fs->getPos(i,1)/Ratio,2*fs->getPos(i,2)/Ratio);
     //glDirToRotate(bird[i].dX(),bird[i].dY(),bird[i].dZ());
-    //	printf("%d: %f %f %f\n",i,fs->getDir(i,0),fs->getDir(i,1),fs->getDir(i,2));
+    if(i==1)   { 
+//	printf("P%d: %f %f %f\n",i,fs->getPos(i,0),fs->getPos(i,1),fs->getPos(i,2));
+//	printf("D%d: %f %f %f\n",i,fs->getDir(i,0),fs->getDir(i,1),fs->getDir(i,2));
+	}
     glRotatef(fs->getDir(i,0),0,fs->getDir(i,1),fs->getDir(i,2)); 
     // glTranslated(bird[i].X()/5,bird[i].Y()/5,-2);
     //  glDrawElements(GL_TRIANGLES,12,GL_UNSIGNED_BYTE,Vindex);    
@@ -148,6 +196,7 @@ void display() {
   //  }
   glDisableClientState(GL_VERTEX_ARRAY);
   printfps();
+  printBorder();
   // updateposition();
   // for(int i=0;i<size;i++){
   //if(i==0){      printf("x=%f y=%f\n",bird[i].X(),bird[i].Y());}
@@ -183,9 +232,12 @@ void reshape(int w,int h){
     }*/
 //printf("fuck!\n");
 
-void mainGL(int argc,char **argv){
+void mainGL(int argc,char **argv,float* border){
   timen=0;
   timeo=0;
+  for(int i=0;i<6;i++){
+        Border[i]=border[i]+2/Ratio;
+  }
 
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_RGBA|GLUT_DEPTH|GLUT_DOUBLE);

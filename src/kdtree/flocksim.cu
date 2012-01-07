@@ -21,7 +21,7 @@ FlockSim::FlockSim(int size, int thread_n,WorldGeo& wg,Para para):_size(size),_t
   cudaMalloc((void**)&_dev_wall,6*sizeof(float));    
   _ang_dir = new float[_size*3*sizeof(float)];
   // cuda grid sructure
-  Block_Dim_x = 256;
+  Block_Dim_x = 128;
   Block_Dim_y = 1;  
   Grid_Dim_x = (int)_size/Block_Dim_x +1;
   if (Grid_Dim_x > 65565)
@@ -58,7 +58,6 @@ void FlockSim::initializeGpuData()
   cudaMemcpyToSymbol("wall", &(_dev_wall), sizeof(float*), size_t(0),cudaMemcpyHostToDevice);      
 }
 
-
 void FlockSim::cpytree2dev()
 {
   cudaMemcpy(_dev_tree, _tree, _size*3*sizeof(int),cudaMemcpyHostToDevice);
@@ -82,11 +81,10 @@ void FlockSim::makeTree()
   _kt->findRoot();  
   _kt->construct();
   ConstructTree(_thread_n,_kt,_thread_handles);
-  //  _kt->printNodes();
-  if(!_kt->checkTree())
-    cerr << "incorrect" << endl;
+  //_kt->printNodes();
+  // if(_kt->checkTree())
+  //   cout << "correct" << endl;
   _root = _kt->getRoot();
-  _kt->clearTree();
 }
 
 __constant__ Para para;
@@ -129,7 +127,12 @@ __device__ float3 operator-(const float3 &a, const float3 &b) {
 }
 
 __device__ float3 operator/(const float3 &a, const float &b) {
-  return make_float3(a.x/b, a.y/b, a.z/b);
+   if(b!=0){
+      return make_float3(a.x/b, a.y/b, a.z/b);
+   }
+   else{
+      return make_float3(0,0,0);
+   }
 }
 
 __device__ float3 operator*(const float3 &a, const float &b) {
@@ -189,23 +192,23 @@ __device__ void goDown(int &cur,int& num,Avg& avg)
   if (cur != num &&  dist< para.R)
   {
     avg.countR++;
-    avg.Rpos = avg.Rpos + getPos(num);
-    avg.Rvel = avg.Rvel + getDir(num);    
+    avg.Rpos = avg.Rpos + getPos(cur);
+    avg.Rvel = avg.Rvel + getDir(cur);    
     if (dist < para.r)
     {
       avg.countr++;
-      avg.rpos = avg.rpos + getPos(num)/dist;
-      avg.rvel = avg.rvel + getDir(num);
+      avg.rpos = avg.rpos +(getPos(num)-getPos(cur))/(dist/10);
+      //avg.rvel = avg.rvel + getDir(num);
     }
   }
-  
-  while(!isEnd(cur))
+  int i=0;
+  while(!isEnd(cur)&&i<1)
   {
     ax = getDepth(cur)%3;
     if (getPosAx(num,ax)>getPosAx(cur,ax))
     {
       tmp = getRChild(cur);
-      if (tmp == cur)
+     if (tmp == cur)
         cur = getLChild(cur);
       else cur = tmp;
     }
@@ -220,15 +223,17 @@ __device__ void goDown(int &cur,int& num,Avg& avg)
     if (cur != num &&  dist< para.R)
     {
       avg.countR++;
-      avg.Rpos = avg.Rpos + getPos(num);
-      avg.Rvel = avg.Rvel + getDir(num);    
+      avg.Rpos = avg.Rpos + getPos(cur);
+      avg.Rvel = avg.Rvel + getDir(cur);    
       if (dist < para.r)
       {
         avg.countr++;
-        avg.rpos = avg.rpos + getPos(num)/dist;
-        avg.rvel = avg.rvel + getDir(num);
+        avg.rpos = avg.rpos +(getPos(num)-getPos(cur))/(dist/10);
+     //   avg.rpos = avg.rpos + getPos(num)/dist;
+      //  avg.rvel = avg.rvel + getDir(num);
       }
     }
+    //i++;
   }
 }
 __device__ bool move(int &cur,int &num)
@@ -280,9 +285,14 @@ __device__ float3 normalize(float3 a)
   float tx,ty,tz;
   float t;
   t = sqrt(a.x*a.x+a.y*a.y+a.z*a.z);
+  if(t!=0){
   tx = a.x/t;
   ty = a.y/t;
   tz = a.z/t;
+  }
+  else{
+  tx=0,ty=0,tz=0;
+  }
   return make_float3(tx,ty,tz);
 }
 
@@ -326,10 +336,14 @@ __global__ void flockUpdate()
     avg.countR = 0;
     avg.countr = 0;    
     calculateAvg(num,avg);
-    avg.Rpos = avg.Rpos/avg.countR;
-    avg.Rvel = avg.Rvel/avg.countR;
-    avg.rpos = avg.rpos/avg.countr;
-    avg.rvel = avg.rvel/avg.countr;
+    if(avg.countR>0){
+       avg.Rpos = avg.Rpos/avg.countR;
+       avg.Rvel = avg.Rvel/avg.countR;
+    }
+    if(avg.countr>0){
+       avg.rpos = avg.rpos;///avg.countr;
+    //   avg.rvel = avg.rvel/avg.countr;
+    }
     // -----------------------------
     // please update position here
     //------------------------------
@@ -341,16 +355,27 @@ __global__ void flockUpdate()
     // wall[0~5]
     if (avg.countR>0)
     {
-      tmpv = normalize(tmpv + normalize(avg.Rpos - tmp)*para.C);
-      tmpv = normalize(tmpv + normalize(avg.Rvel)*para.A);      
+//	tmpv=normalize(avg.Rpos-tmp);
+        tmpv = normalize(tmpv + normalize(avg.Rpos - tmp)*para.C);
+        tmpv = normalize(tmpv + normalize(avg.Rvel)*para.A);    
+     
+  
+//	tmpv=normalize(tmpv+normalize(avg.Rpos-tmp));
+  //    tmpv = normalize(tmpv + normalize(avg.Rvel));    
+    
+    if (avg.countr>0){
+ //     tmpv = normalize(avg.rpos)*para.S;
+     // tmpv
+     tmpv =/* normalize(tmpv + */normalize(avg.rpos)*para.S;
+      //tmpv = tmpv+normalize(make_float3(1,0,0))*para.S;
+      //tmpv = normalize(tmpv);
+	
     }
-    if (avg.countr>0)
-    {
-      tmpv = normalize(tmpv + normalize(avg.rpos)*para.S);
+
     }
     tmp = tmp+(tmpv*para.dt);
     setPos(num,tmp);
-    setDir(num,tmpv);    
+    setDir(num,tmpv); 
   }
   
   __syncthreads();
