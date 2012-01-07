@@ -314,6 +314,19 @@ __device__ void wallCheck(int& num,float3 &pos,float3 &dir)
     dir.y = dir.y*-1.0;
   if(pos.z < wall[4] || pos.z > wall[5])
     dir.z = dir.z*-1.0;  
+  
+  if(pos.x<wall[0])
+    pos.x=wall[0];
+  if(pos.x>wall[1])
+    pos.x=wall[1];
+  if(pos.y<wall[2])
+    pos.y=wall[2];
+  if(pos.y>wall[3])
+    pos.y=wall[3];
+  if(pos.z<wall[4])
+    pos.z=wall[4];
+  if(pos.z>wall[5])
+    pos.z=wall[5];
 }
 
 
@@ -326,7 +339,7 @@ __global__ void flockUpdate()
     float3 tmpv;
     tmp = getPos(num);
     tmpv = getDir(num);
-    wallCheck(num,tmp,tmpv);
+//    wallCheck(num,tmp,tmpv);
     __syncthreads();
     Avg avg;
     avg.Rpos = make_float3(0,0,0);
@@ -353,6 +366,7 @@ __global__ void flockUpdate()
     // avg.rvel average velocity within r    
     // above variable are float3.
     // wall[0~5]
+    tmpv=normalize(tmpv);
     if (avg.countR>0)
     {
 //	tmpv=normalize(avg.Rpos-tmp);
@@ -373,6 +387,7 @@ __global__ void flockUpdate()
     }
 
     }
+    wallCheck(num,tmp,tmpv);
     tmp = tmp+(tmpv*para.dt);
     setPos(num,tmp);
     setDir(num,tmpv); 

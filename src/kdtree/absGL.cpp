@@ -26,6 +26,10 @@ extern int size;
 
 float Border[6];
 
+float boxangleX,boxangleY;
+bool mouseLeftDown;
+float Xmouse,Ymouse;
+
 GLfloat Vertices[]={
   2,0,0, -1,1,0, 
   2,0,0, -1,-1,0,
@@ -95,12 +99,23 @@ void fpscal(){
 }
 
 void printfps(){
+  glPushMatrix();
+  glLoadIdentity();
+
+  glMatrixMode(GL_PROJECTION);
+  glPushMatrix();
+  glLoadIdentity();
+  glOrtho(0,W,0,H,-1,1); 
   char temp[100];
   sprintf(temp,"FPS: %d",fps);
   glColor3f(1.0f,0,0);
-  glRasterPos2i(-40,-30);
+  glRasterPos2i(W/2,10);
   printBitmapString(GLUT_BITMAP_HELVETICA_18,temp);
   // printf("%s",temp);
+  glPopMatrix();
+  
+  glMatrixMode(GL_MODELVIEW);
+  glPopMatrix();
 
 }
 
@@ -155,8 +170,9 @@ void display() {
 
   glPushMatrix();
 
-  glTranslatef(0,0,-700);
-  glRotatef(-70,1,0,0);  
+  glTranslatef(0,0,-900);
+  glRotatef(boxangleY,1,0,0);
+//  glRotatef(boxangleX,0,1,0);  
   //  glLoadIdentity();
   //    gluLookAt(0,0,5,0,0,0,0,1,0);
   //glBufferData(GL_ARRAY_BUFFER,size*2*sizeof(float),position,GL_DYNAMIC_DRAW);
@@ -213,7 +229,7 @@ void display() {
 void reshape(int w,int h){
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  glFrustum(-W/Ratio,W/Ratio,-H/Ratio,H/Ratio,600,800);
+  glFrustum(-W/Ratio,W/Ratio,-H/Ratio,H/Ratio,100,2000);
   //   glOrtho(-W/10,W/10,-H/10,H/10,-100,100);
   //    glRotatef(-30,1,0,0);
   //     glTranslated(0,0,-10);
@@ -221,6 +237,28 @@ void reshape(int w,int h){
   glLoadIdentity();
 
 
+}
+
+
+void mouse(int button,int state,int x,int y){
+     Xmouse=x;
+     Ymouse=y;
+     if(button==GLUT_LEFT_BUTTON){
+	if(state==GLUT_DOWN){
+		mouseLeftDown=true;
+	}
+        else if(state==GLUT_UP){
+		mouseLeftDown=false;
+	}
+     }
+
+}
+
+void mouseM(int x,int y){
+     if(mouseLeftDown){
+          boxangleY+=(y-Ymouse)/100;
+          boxangleX+=(x-Xmouse)/100;
+     }
 }
 
 // cudaMalloc((void**)&d_a, sizeof(h_a));
@@ -235,6 +273,9 @@ void reshape(int w,int h){
 void mainGL(int argc,char **argv,float* border){
   timen=0;
   timeo=0;
+  boxangleX=0;
+  boxangleY=-70;
+  mouseLeftDown=false;
   for(int i=0;i<6;i++){
         Border[i]=border[i]+2/Ratio;
   }
@@ -256,7 +297,8 @@ void mainGL(int argc,char **argv,float* border){
   glutDisplayFunc(display);
   glutReshapeFunc(reshape);
   glutIdleFunc(idle);
-
+  glutMouseFunc(mouse);
+  glutMotionFunc(mouseM);
   initGL();
   glutMainLoop();
 
