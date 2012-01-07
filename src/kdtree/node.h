@@ -1,6 +1,6 @@
 #ifndef NODE_H_
 #define NODE_H_
-#define NDEBUG
+//#define NDEBUG
 #include <stdlib.h>
 #include <vector>
 #include <algorithm>
@@ -33,13 +33,23 @@ class Node
   int getParent() const;
   int getLChild() const;
   int getRChild() const;
-  void setDepth(int d);
-  int getDepth() const;
-  int getDim() const;  
+  static void setDepth(int idx,int d){
+    assert(idx >= 0 && idx < _size);
+    assert(d >= 0);
+    _depth[idx]=d;
+  }
+  static int getDepth(int idx){
+    assert(idx >= 0 && idx < _size);
+    return _depth[idx]; }
+  static int getDim() {return _dim;}
   void buildRootList(int size);
   void separateList();
-  static float getPos(int idx,int dim)  {   return _pos[idx*_psize+dim];  }
-  static float getDir(int idx,int dim)  {   return _xyz_dir[idx*_psize+dim];  }  
+  static float getPos(int idx,int dim)  {
+    assert(idx >= 0 && idx < _size);
+    return _pos[idx*_psize+dim];  }
+  static float getDir(int idx,int dim)  {
+    assert(idx >= 0 && idx < _size);
+    return _xyz_dir[idx*_psize+dim];  }  
   float getDir(int dim) const;
   void setPos(int dim,float pos);
   void setDir(int dim,float dir);
@@ -61,14 +71,15 @@ class Node
   
  private:
   int _idx;
-  int _depth;
+
   static int _psize;
   static int _size;
   static int _dim;  
   static bool _static_init;
+  static int* _depth;  
   static float* _pos;          /* position only */
   static float* _xyz_dir;
-static int* _tree;
+  static int* _tree;
   vector<int>* _list,*_llist,*_rlist;
 };
 #endif

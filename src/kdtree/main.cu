@@ -31,13 +31,16 @@ int main(int argc, char *argv[])
   Para para;
   para.R = 10.0;
   para.r = 3.0;
-  para.dt = 0.01;
-  para.C = 5.0;
-  para.A = 3.0;
-  para.S = 0.1;
+  para.dt = 0.5;
+  para.C = 1.0;
+  para.A = 1.0;
+  para.S = 1.0;
   // 
   fs =  new FlockSim(size,thread_number,wg,para);
   fs->initializeGpuData();       // only needed one time
+  
+  fs->_kt->randInit();    
+  //fs->makeTree();  
   mainGL(argc,argv);
   // while(true)
   // {

@@ -21,7 +21,7 @@ FlockSim::FlockSim(int size, int thread_n,WorldGeo& wg,Para para):_size(size),_t
   cudaMalloc((void**)&_dev_wall,6*sizeof(float));    
   _ang_dir = new float[_size*3*sizeof(float)];
   // cuda grid sructure
-  Block_Dim_x = 512;
+  Block_Dim_x = 256;
   Block_Dim_y = 1;  
   Grid_Dim_x = (int)_size/Block_Dim_x +1;
   if (Grid_Dim_x > 65565)
@@ -58,6 +58,7 @@ void FlockSim::initializeGpuData()
   cudaMemcpyToSymbol("wall", &(_dev_wall), sizeof(float*), size_t(0),cudaMemcpyHostToDevice);      
 }
 
+
 void FlockSim::cpytree2dev()
 {
   cudaMemcpy(_dev_tree, _tree, _size*3*sizeof(int),cudaMemcpyHostToDevice);
@@ -81,10 +82,11 @@ void FlockSim::makeTree()
   _kt->findRoot();  
   _kt->construct();
   ConstructTree(_thread_n,_kt,_thread_handles);
-  //_kt->printNodes();
-  // if(_kt->checkTree())
-  //   cout << "correct" << endl;
+  //  _kt->printNodes();
+  if(!_kt->checkTree())
+    cerr << "incorrect" << endl;
   _root = _kt->getRoot();
+  _kt->clearTree();
 }
 
 __constant__ Para para;

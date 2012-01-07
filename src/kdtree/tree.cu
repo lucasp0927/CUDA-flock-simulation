@@ -1,9 +1,8 @@
 #include "tree.h"
-#ifndef NDEBUG
+//#ifndef NDEBUG
 #include <stdio.h>
 #include <unistd.h>
 #include <stdio.h>
-#endif
 
 WorldGeo::WorldGeo(int dim):_dim(dim)
 {
@@ -37,6 +36,7 @@ KdTree::KdTree(int thread_n, int size, WorldGeo* wg):_thread_n(thread_n),_size(s
 KdTree::~KdTree()
 {
   delete[] _nodes;
+  _nodes = NULL;
 }
 
 void KdTree::findRoot()
@@ -48,14 +48,6 @@ void KdTree::findRoot()
 
 void* KdTree::construct_thread(Node* job,struct drand48_data* buffer)
 {
-#ifndef NDEBUG
-  int count = 0;
-  // ----------------------------------
-  struct timeval start, end;
-  long mtime, seconds, useconds;    
-  gettimeofday(&start, NULL);
-  // ---------------------------------  
-#endif
   queue<Node*> unfinish;
   unfinish.push(job);
   assert(unfinish.size() == 1);
@@ -78,30 +70,13 @@ void* KdTree::construct_thread(Node* job,struct drand48_data* buffer)
       cur->setChild(left,right);
       if (left != NULL)
         {
-#ifndef NDEBUG
-          count++;
-#endif
           unfinish.push(left);
         }
       if (right != NULL)
         {
-#ifndef NDEBUG
-          count++;
-#endif      
           unfinish.push(right);
         }
     };
-#ifndef NDEBUG
-  //  cout << "Thread Report"<<endl;  
-  // ----------------------------------------
-  // gettimeofday(&end, NULL);
-  // seconds  = end.tv_sec  - start.tv_sec;
-  // useconds = end.tv_usec - start.tv_usec;
-  // mtime = ((seconds) * 1000 + useconds/1000.0) + 0.5;
-  // printf("Elapsed time: %ld milliseconds\n", mtime);
-  // -----------------------------------------  
-  cout << "processed "<< count << " nodes." << endl;
-#endif
   return NULL;
 }
 
@@ -119,7 +94,6 @@ void KdTree::construct()
         left = &(_nodes[cur->leftmedian()]);
       else
         left = NULL;
-    
       if (cur->getRList()->size() != 0)
         right = &(_nodes[cur->rightmedian()]);
       else
@@ -187,9 +161,13 @@ bool KdTree::checkTree()
           if (cur == _nodes[tmp].getRChild())
             lr = 1;
           cur = tmp;
-          ax = _nodes[cur].getDepth()%_dim;
+          assert(check>= 0 && check < _size);
+          assert(cur>= 0 && cur < _size);                        
+          ax = Node::getDepth(cur)%_dim;
           if (lr == 0)
             {
+              assert(check>= 0 && check < _size);
+              assert(cur>= 0 && cur < _size);              
               if (Node::getPos(check,ax) > Node::getPos(cur,ax))
                 {
                   cout << "check:" << check << " wrong at:" << cur << endl;
@@ -198,6 +176,8 @@ bool KdTree::checkTree()
             }
           else
             {
+              assert(check>= 0 && check < _size);
+              assert(cur>= 0 && cur < _size);                            
               if (Node::getPos(check,ax) < Node::getPos(cur,ax))
                 {
                   cout << "check:" << check << " wrong at:" << cur << endl;          
@@ -239,7 +219,9 @@ int KdTree::goDown(int& cur,int& d,float& dis)
     }  
   while (!_nodes[cur].isEnd())
     {
-      ax = _nodes[cur].getDepth()%_dim;
+      ax = Node::getDepth(cur)%_dim;
+      assert(d>= 0 && d < _size);
+      assert(cur>= 0 && cur < _size);                    
       if (Node::getPos(d,ax) > Node::getPos(cur,ax))
         {
           tmp = _nodes[cur].getRChild();
@@ -265,9 +247,11 @@ int KdTree::goDown(int& cur,int& d,float& dis)
 
 bool KdTree::move(int& cur , int& d,float& dis)
 {
+  assert(d>= 0 && d < _size);                
   int parent = _nodes[cur].getParent();
-  int ax = _nodes[parent].getDepth()%_dim;
+  int ax = Node::getDepth(parent)%_dim;
   float d_ax = Node::getPos(d,ax);
+  assert(parent>= 0 && parent < _size);                  
   float curp_ax = Node::getPos(parent,ax);
 
   if (fabs(d_ax - curp_ax) <= dis)
@@ -329,7 +313,7 @@ int KdTree::deepest()
   int tmp;
   for (int i = 0; i < _size; ++i)
     {
-      tmp = _nodes[i].getDepth();
+      tmp = Node::getDepth(i);
       if (tmp > d)
         d = tmp;
     }
@@ -338,7 +322,7 @@ int KdTree::deepest()
 void KdTree::depthArray(int* arr)
 {
   for (int i = 0; i < _size; ++i)
-    arr[i] = _nodes[i].getDepth();
+    arr[i] = Node::getDepth(i);
 }
 
 void KdTree::clearTree()
@@ -375,6 +359,7 @@ void ConstructTree(int thread_n , KdTree* myTree, pthread_t* thread_handles)
   for (long thread = 0; thread < thread_n; thread++)
     pthread_join(thread_handles[thread],NULL);
   delete [] args;
+  args = NULL;
 }
 
 
