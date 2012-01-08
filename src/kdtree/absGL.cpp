@@ -184,7 +184,7 @@ void display() {
 
   glPushMatrix();
 
-  glTranslatef(0,0,-(Border[1]*1.2));
+  glTranslatef(0,0,-(Border[3]*1.5));
   glRotatef(boxangleY,1,0,0);
   glColor3f(1.0f,1.0f,1.0f);
 

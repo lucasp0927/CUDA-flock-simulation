@@ -3,9 +3,9 @@ NVCC = /usr/local/cuda/bin/nvcc
 GXX = g++
 CUDAPATH = /usr/lib
 
-NVCCFLAGS = -arch sm_21 
-#NVCCFLAGS =   -I$(CUDAPATH)/include 
-LFLAGS = -L$(CUDAPATH)/lib64  -lcudart -lm -O3 -lpthread
+#NVCCFLAGS = -arch sm_21 
+NVCCFLAGS =   -I$(CUDAPATH)/include 
+LFLAGS =# -L$(CUDAPATH)/lib64  -lcudart -lm -O3 -lpthread
 GXXFLAG = -O3 -lm -lpthread -Xcompiler -fopenmp
 OPENFLAG = -L/usr/lib -lGL -lglut -lGLEW
 

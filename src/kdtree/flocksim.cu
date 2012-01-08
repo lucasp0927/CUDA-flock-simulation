@@ -23,7 +23,7 @@ FlockSim::FlockSim(int size, int thread_n,WorldGeo& wg,Para para):_size(size),_t
   _ang_dir = (float*) malloc(_size*3*sizeof(float));
 
   // cuda grid sructure
-  Block_Dim_x = 512;
+  Block_Dim_x = 128;
   Block_Dim_y = 1;  
   Grid_Dim_x = (int)_size/Block_Dim_x +1;
   if (Grid_Dim_x > 65565)
