@@ -20,7 +20,7 @@ FlockSim::FlockSim(int size, int thread_n,WorldGeo& wg,Para para):_size(size),_t
   cudaMalloc((void**)&_dev_ang_dir,_size*3*sizeof(int));
   cudaMalloc((void**)&_dev_wall,6*sizeof(float));
   cudaMalloc((void**)&_dev_isend,_size*sizeof(int));    
-  _ang_dir = new float[_size*3*sizeof(float)];
+  _ang_dir = (float*) malloc(_size*3*sizeof(float));
 
   // cuda grid sructure
   Block_Dim_x = 128;
@@ -41,7 +41,7 @@ FlockSim::~FlockSim()
   cudaFree(&_dev_ang_dir);
   cudaFree(&_dev_depth);
   cudaFree(&_dev_wall);
-  delete [] _ang_dir;
+  free( _ang_dir);
   delete [] _depth;
 }
 

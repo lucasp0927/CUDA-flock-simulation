@@ -13,15 +13,10 @@ using namespace std;
 
 void normalize(float* f,int size);
 float randRange(float a,float b);
-class tuplet 
+struct tuplet 
 {
- public:
- tuplet(int i,float p):idx(i),pos(p)
-  {
-  }
   int idx;
   float pos;
- private:
 };
 
   

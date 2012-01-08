@@ -33,7 +33,8 @@ Node::~Node()
   clear();
   if (_static_init)
   {
-    delete [] _pos;
+    //    delete [] _pos;
+    free(_pos);
     _pos = NULL;
     delete [] _tree;
     _tree = NULL;
@@ -64,7 +65,8 @@ void Node::init(int dim,int idx,int size)
     _tree = new int[3*_size];
     _xyz_dir = new float[_dim*_size];
     _depth = new int[_size];        
-    _pos = new float[_psize*_size];
+    _pos =(float*) malloc(_psize*_size*sizeof(float));
+    //new float[_psize*_size];
     _static_init = true;
   }
   
@@ -153,38 +155,17 @@ bool Less::operator() (int  a, int b)
 } 
 
 
-void quick_sort (int *a, int n,int depth) {
-  int dim = Node::getDim();
-    if (n < 2)
-        return;
-    float p = Node::getPos(a[n / 2],depth%dim);
-    int *l = a;
-    int *r = a + n - 1;
-    while (l <= r) {
-      while (Node::getPos(*l,depth%dim) < p)
-            l++;
-      while ( Node::getPos(*r,depth%dim)> p)
-            r--;
-        if (l <= r) {
-            int t = *l;
-            *l++ = *r;
-            *r-- = t;
-        }
-    }
-    quick_sort(a, r - a + 1, depth);
-    quick_sort(l, a + n - l, depth);
-}
 
-bool compare (tuplet a,tuplet b)
+int compare (const void* a,const void* b)
 {
-  return a.pos < b.pos;
+  return(((tuplet*)a)->pos - ((tuplet*)b)->pos);
 }
 
 int Node::median(int sample_sz,vector<int>* list,bool next,struct drand48_data *buffer)
 {
   double randnum;
   //  vector<int> sample;
-  vector<tuplet> sample;    
+  tuplet* sample;    
   //  sample = new vector<int>;
   int tmp;
 
@@ -193,8 +174,8 @@ int Node::median(int sample_sz,vector<int>* list,bool next,struct drand48_data *
   {
     int ax = getDepth(_idx)%getDim();    
     sample_sz = _size < sample_sz? _size:sample_sz;
+    sample = (tuplet*) malloc(sample_sz*sizeof(tuplet));
     assert (sample_sz == SAMPLESIZE || sample_sz == _size );
-    sample.clear();
     for (int i = 0; i < sample_sz; ++i)
     {
       if (buffer == NULL)
@@ -208,14 +189,12 @@ int Node::median(int sample_sz,vector<int>* list,bool next,struct drand48_data *
       // if (tmp >= _size)
       //   tmp = _size-1;
       assert(tmp >=0 && tmp < _size);
-      sample.push_back(tuplet(tmp,Node::getPos(tmp,ax)));
+      //      sample.push_back(tuplet(tmp,Node::getPos(tmp,ax)));
+      sample[i].idx = tmp;
+      sample[i].pos = Node::getPos(tmp,ax);
     }
-    assert(sample.size() == sample_sz);
-    assert(getDepth(_idx) >= 0);
-
-    assert(ax >= 0 && ax < 3);
-    sort(sample.begin(),sample.end(),compare);        
-    //quick_sort (sample, sample_sz,getDepth(_idx));
+    //sort(sample.begin(),sample.end(),compare);        
+    qsort(sample,sample_sz,sizeof(tuplet),compare);
   }
   else
   {
@@ -224,8 +203,9 @@ int Node::median(int sample_sz,vector<int>* list,bool next,struct drand48_data *
     int ax = getDepth(_idx)%getDim();        
     assert(list->size() != 0);
     sample_sz = list->size() < sample_sz? list->size():sample_sz;
+    sample = (tuplet*) malloc(sample_sz*sizeof(tuplet));
     assert (sample_sz == SAMPLESIZE || sample_sz == list->size());    
-    sample.clear();
+    //    sample.clear();
     //    sample.reserve(sample_sz);
     for (int i = 0; i < sample_sz; ++i)
     {
@@ -241,10 +221,10 @@ int Node::median(int sample_sz,vector<int>* list,bool next,struct drand48_data *
       //   tmp = list->size()-1;
       tmp = (*list)[tmp];
       assert(tmp >= 0 && tmp < _size);
-      sample.push_back(tuplet(tmp,Node::getPos(tmp,ax)));      
+      sample[i].idx = tmp;
+      sample[i].pos = Node::getPos(tmp,ax);      
+      //      sample.push_back(tuplet(tmp,Node::getPos(tmp,ax)));      
     }
-    assert(sample.size() == sample_sz);
-    
     // vector<int>::iterator it;
     // cout << "sample contains:";
     // for (it=sample.begin(); it!=sample.end(); ++it)
@@ -252,13 +232,15 @@ int Node::median(int sample_sz,vector<int>* list,bool next,struct drand48_data *
     // cout << endl;
     assert(getDepth(_idx) >= 0);    
     assert(ax >= 0 && ax < 3);    
-    sort(sample.begin(),sample.end(),compare);    
-//quick_sort (sample, sample_sz,getDepth(_idx));          
+    //    sort(sample.begin(),sample.end(),compare);    
+//quick_sort (sample, sample_sz,getDepth(_idx));
+    qsort(sample,sample_sz,sizeof(tuplet),compare);
     if(next)
       _depth[_idx]--;
   }
   
-  int result = sample[sample_sz/2].idx;    
+  int result = sample[sample_sz/2].idx;
+  free(sample);
   //  delete sample;
   return result;  
 }
