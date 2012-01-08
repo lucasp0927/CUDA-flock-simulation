@@ -175,16 +175,23 @@ void quick_sort (int *a, int n,int depth) {
     quick_sort(l, a + n - l, depth);
 }
 
+bool compare (tuplet a,tuplet b)
+{
+  return a.pos < b.pos;
+}
+
 int Node::median(int sample_sz,vector<int>* list,bool next,struct drand48_data *buffer)
 {
   double randnum;
   //  vector<int> sample;
-  vector<int> sample;
+  vector<tuplet> sample;    
   //  sample = new vector<int>;
   int tmp;
+
   //  cerr << list->size();
   if (list == NULL)
   {
+    int ax = getDepth(_idx)%getDim();    
     sample_sz = _size < sample_sz? _size:sample_sz;
     assert (sample_sz == SAMPLESIZE || sample_sz == _size );
     sample.clear();
@@ -201,19 +208,20 @@ int Node::median(int sample_sz,vector<int>* list,bool next,struct drand48_data *
       // if (tmp >= _size)
       //   tmp = _size-1;
       assert(tmp >=0 && tmp < _size);
-      sample.push_back(tmp);
+      sample.push_back(tuplet(tmp,Node::getPos(tmp,ax)));
     }
     assert(sample.size() == sample_sz);
     assert(getDepth(_idx) >= 0);
-    int ax = getDepth(_idx)%getDim();
+
     assert(ax >= 0 && ax < 3);
-    sort(sample.begin(),sample.end(),Less(ax));        
+    sort(sample.begin(),sample.end(),compare);        
     //quick_sort (sample, sample_sz,getDepth(_idx));
   }
   else
   {
     if(next)
       _depth[_idx]++;
+    int ax = getDepth(_idx)%getDim();        
     assert(list->size() != 0);
     sample_sz = list->size() < sample_sz? list->size():sample_sz;
     assert (sample_sz == SAMPLESIZE || sample_sz == list->size());    
@@ -232,8 +240,8 @@ int Node::median(int sample_sz,vector<int>* list,bool next,struct drand48_data *
       // if (tmp >= list->size() )
       //   tmp = list->size()-1;
       tmp = (*list)[tmp];
-      assert(tmp >= 0 && tmp < _size);      
-      sample.push_back(tmp);
+      assert(tmp >= 0 && tmp < _size);
+      sample.push_back(tuplet(tmp,Node::getPos(tmp,ax)));      
     }
     assert(sample.size() == sample_sz);
     
@@ -243,15 +251,14 @@ int Node::median(int sample_sz,vector<int>* list,bool next,struct drand48_data *
     //   cout << " " << *it;
     // cout << endl;
     assert(getDepth(_idx) >= 0);    
-    int ax = getDepth(_idx)%getDim();
     assert(ax >= 0 && ax < 3);    
-    sort(sample.begin(),sample.end(),Less(ax));    
+    sort(sample.begin(),sample.end(),compare);    
 //quick_sort (sample, sample_sz,getDepth(_idx));          
     if(next)
       _depth[_idx]--;
   }
   
-  int result = sample[sample_sz/2];    
+  int result = sample[sample_sz/2].idx;    
   //  delete sample;
   return result;  
 }

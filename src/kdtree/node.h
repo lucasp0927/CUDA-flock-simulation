@@ -1,6 +1,6 @@
 #ifndef NODE_H_
 #define NODE_H_
-//#define NDEBUG
+#define NDEBUG
 #include <stdlib.h>
 #include <vector>
 #include <algorithm>
@@ -13,11 +13,23 @@ using namespace std;
 
 void normalize(float* f,int size);
 float randRange(float a,float b);
+class tuplet 
+{
+ public:
+ tuplet(int i,float p):idx(i),pos(p)
+  {
+  }
+  int idx;
+  float pos;
+ private:
+};
+
+  
 struct Less {
 Less(int ax) : _ax(ax) {}
   bool operator () ( int  a,int  b );
   int _ax;
-};  
+};
 class Node
 {
 

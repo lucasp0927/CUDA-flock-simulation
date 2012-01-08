@@ -8,9 +8,6 @@
 
 #include <sys/time.h>
 #include <stdio.h>
-#include <unistd.h>
-
-
 
 using namespace std;
 FlockSim *fs;
@@ -40,15 +37,16 @@ int main(int argc, char *argv[])
   fs =  new FlockSim(flocksize,thread_number,wg,para);
   fs->initializeGpuData();       // only needed one time
   fs->_kt->clearTree();
-  while (true)
-  {
-  fs->makeTree();
-  fs->cpytree2dev();
-  fs->update();
-  fs->cpy2host();
-  fs->_kt->clearTree();
-  }
-  //  mainGL(argc,argv,ws);
+  // while (true)
+  // {
+  // fs->makeTree();
+  // fs->cpytree2dev();
+  // fs->update();
+  // fs->cpy2host();
+  // fs->_kt->randInit();  
+  // fs->_kt->clearTree();
+  // }
+  mainGL(argc,argv,ws);
 
 
   // while(true)

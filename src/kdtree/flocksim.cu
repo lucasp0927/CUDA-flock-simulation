@@ -64,15 +64,15 @@ void FlockSim::initializeGpuData()
 
 void FlockSim::cpytree2dev()
 {
-  cudaMemcpy(_dev_tree, _tree, _size*3*sizeof(int),cudaMemcpyHostToDevice);
-  cudaMemcpy(_dev_depth, _depth, _size*sizeof(int),cudaMemcpyHostToDevice);
+  cudaMemcpy((void*)_dev_tree,(void*) _tree, _size*3*sizeof(int),cudaMemcpyHostToDevice);
+  cudaMemcpy((void*)_dev_depth,(void*) _depth, _size*sizeof(int),cudaMemcpyHostToDevice);
   cudaMemcpyToSymbol("root", &_root, sizeof(int), size_t(0),cudaMemcpyHostToDevice);  
 }
 
 void FlockSim::cpy2host()
 {
-  cudaMemcpy(_pos, _dev_pos, _size*_psize*sizeof(float),cudaMemcpyDeviceToHost);
-  cudaMemcpy(_ang_dir, _dev_ang_dir, _size*3*sizeof(float),cudaMemcpyDeviceToHost);  
+  cudaMemcpy((void*)_pos,(void*) _dev_pos, _size*_psize*sizeof(float),cudaMemcpyDeviceToHost);
+  cudaMemcpy((void*)_ang_dir,(void*) _dev_ang_dir, _size*3*sizeof(float),cudaMemcpyDeviceToHost);  
 }
 
 void FlockSim::depthArray()

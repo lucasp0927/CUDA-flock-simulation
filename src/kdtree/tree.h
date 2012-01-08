@@ -1,6 +1,6 @@
 #ifndef TREE_H_
 #define TREE_H_
-//#define NDEBUG
+#define NDEBUG
 #include <stdlib.h>
 #include <vector>
 #include <queue>
@@ -11,7 +11,7 @@
 #include <pthread.h>
 #include "node.h"
 #include <sys/time.h>
-
+#include <unistd.h>
 #define SAMPLESIZE 100
 using namespace std;
 
