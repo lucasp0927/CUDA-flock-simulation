@@ -13,13 +13,14 @@ using namespace std;
 
 void normalize(float* f,int size);
 float randRange(float a,float b);
+struct Less {
+Less(int ax) : _ax(ax) {}
+  bool operator () ( int  a,int  b );
+  int _ax;
+};  
 class Node
 {
-  struct Less {
-  Less(Node* c) : myNode(c) {}
-    bool operator () ( const int & a,const int & b );
-    Node* myNode;
-  };  
+
  public:
   Node();
   virtual ~Node();

@@ -112,20 +112,22 @@ void Node::separateList()
   else _llist->clear();  
   // _rlist->reserve(_list->size()/2);
   // _llist->reserve(_list->size()/2);
+  float piv = getPos(_idx,dim);
   for(vector<int>::iterator it = _list->begin(); it != _list->end(); ++it) {
     if (*it != _idx)
     {
       assert(*it >= 0 && *it < _size);
       assert(_idx >= 0 && _idx < _size);      
-      if (getPos(*it,dim) > getPos(_idx,dim))
+      if (getPos(*it,dim) > piv)
         _rlist->push_back(*it);
       else
         _llist->push_back(*it);
     }
   }
   _list->clear();
+  delete _list;
+  _list = NULL;
 }
-
 
 void Node::setPos(int dim,float pos)
 {
@@ -138,11 +140,12 @@ void Node::setDir(int dim,float dir)
 }
 
 
-bool Node::Less::operator() (const int & a, const int& b)
+bool Less::operator() (int  a, int b)
 {
-  assert(a >= 0&& a < myNode->_size);
-  assert(b >= 0&& b < myNode->_size);
-  return (Node::getPos(a,Node::getDepth(myNode->getIdx())%Node::getDim()) < Node::getPos(b,Node::getDepth(myNode->getIdx())%Node::getDim()));
+  cout << a << " " << b << endl;
+  assert(a >= 0&& a < Node::_size);
+  assert(b >= 0&& b < Node::_size);
+  return (Node::getPos(a,_ax) < Node::getPos(b,_ax));
 } 
 
 
@@ -175,33 +178,30 @@ int Node::median(int sample_sz,vector<int>* list,bool next,struct drand48_data *
   vector<int>* sample;
   sample = new vector<int>;
   int tmp;
+  //  cerr << list->size();
   if (list == NULL)
   {
     sample_sz = _size < sample_sz? _size:sample_sz;
     assert (sample_sz == SAMPLESIZE || sample_sz == _size );
     sample->clear();
-    int count = 0;
-    while (count < sample_sz)
+    for (int i = 0; i < sample_sz; ++i)
     {
       if (buffer == NULL)
         tmp = rand() % (_size);
       else
       {
         drand48_r(buffer, &randnum);
-        tmp =  (int)randnum*(_size);
+        tmp =  (int)(randnum*_size);
       }
-      //    if (find(sample.begin(),sample.end(),tmp) == sample.end())
-      // {
-      if (tmp >= _size)
-        tmp = _size-1;
+      assert(tmp >=0 && tmp < _size);
+      // if (tmp >= _size)
+      //   tmp = _size-1;
       assert(tmp >=0 && tmp < _size);
       sample->push_back(tmp);
-      count++;
-      //      }
     }
-    sort(sample->begin(),sample->end(),Less(this));        
+    assert(sample->size() == sample_sz);    
+    sort(sample->begin(),sample->end(),Less(getDepth(_idx)%getDim() ));        
     //quick_sort (sample, sample_sz,getDepth(_idx));
-    
   }
   else
   {
@@ -211,35 +211,32 @@ int Node::median(int sample_sz,vector<int>* list,bool next,struct drand48_data *
     sample_sz = list->size() < sample_sz? list->size():sample_sz;
     assert (sample_sz == SAMPLESIZE || sample_sz == list->size());    
     sample->clear();
-    //    sample.reserve(sample_sz);      
-    int count = 0;
-    while (count < sample_sz)
+    //    sample.reserve(sample_sz);
+    for (int i = 0; i < sample_sz; ++i)
     {
       if (buffer == NULL)
         tmp = rand() % (list->size());        
       else
       {
         drand48_r(buffer, &randnum);
-        tmp =  (int)randnum*(list->size());
-      }      
-
-      //      if (find(sample.begin(),sample.end(),tmp) == sample.end())
-      //      {
-      if (tmp >= list->size() )
-        tmp = list->size()-1;
+        tmp =  (int)(randnum*list->size());
+      }
+      assert(tmp >= 0 && tmp < list->size());
+      // if (tmp >= list->size() )
+      //   tmp = list->size()-1;
+      tmp = (*list)[tmp];
+      assert(tmp >= 0 && tmp < _size);      
       sample->push_back(tmp);
-      count++;
-      //      }
-    };
-    for (int i = 0; i < sample_sz; ++i)
-    {
-      int tmp;
-      tmp = (*list)[(*sample)[i]];
-      assert(tmp >= 0 && tmp < _size);
-      (*sample)[i] = tmp;
     }
+    assert(sample->size() == sample_sz);
     
-    sort(sample->begin(),sample->end(),Less(this));    
+    vector<int>::iterator it;
+    cout << "sample contains:";
+    for (it=sample->begin(); it!=sample->end(); ++it)
+      cout << " " << *it;
+    cout << endl;
+    
+    sort(sample->begin(),sample->end(),Less(getDepth(_idx)%getDim() ));    
 //quick_sort (sample, sample_sz,getDepth(_idx));          
     if(next)
       _depth[_idx]--;
@@ -264,25 +261,36 @@ void Node::setChild(Node* left,Node* right)
 {
   if (left != NULL)
   {
-    setLChild(left->getIdx());
+    int lidx = left->getIdx();
+    setLChild(lidx);
     left->setParent(_idx);
-    Node::setDepth(left->getIdx(),_depth[_idx]+1);
+    Node::setDepth(lidx,_depth[_idx]+1);
     left->setList(_llist);
     _llist = NULL;
   }
   else
+  {
     setLChild(_idx);
-  
+    delete _llist;
+    _llist = NULL;
+  }
+    
   if (right != NULL)
   {
-    setRChild(right->getIdx());
+    int ridx = right->getIdx();
+    setRChild(ridx);
     right->setParent(_idx);  
-    Node::setDepth(right->getIdx(),Node::getDepth(_idx)+1);
+    Node::setDepth(ridx,Node::getDepth(_idx)+1);
     right->setList(_rlist);
     _rlist = NULL;
   }
   else
+  {
     setRChild(_idx);
+    delete _rlist;
+    _rlist = NULL;
+  }
+  
 }
 
 int Node::leftmedian(struct drand48_data *buffer)

@@ -5,7 +5,7 @@ CUDAPATH = /usr/lib
 
 NVCCFLAGS = -arch sm_21 
 #NVCCFLAGS =   -I$(CUDAPATH)/include 
-LFLAGS = -L$(CUDAPATH)/lib64  -lcudart -lm -O3 -lpthread
+LFLAGS = -L$(CUDAPATH)/lib64  -lcudart -lm -g -lpthread
 GXXFLAG = -O3 -lm -lpthread -Xcompiler -fopenmp
 OPENFLAG = -L/usr/lib -lGL -lglut -lGLEW
 

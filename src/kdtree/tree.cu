@@ -50,7 +50,6 @@ void* KdTree::construct_thread(Node* job,struct drand48_data* buffer)
 {
   queue<Node*> unfinish;
   unfinish.push(job);
-  assert(unfinish.size() == 1);
   Node* cur;
   Node* left,* right;
   while(unfinish.size() > 0)
@@ -58,15 +57,18 @@ void* KdTree::construct_thread(Node* job,struct drand48_data* buffer)
     cur = unfinish.front();
     unfinish.pop();
     cur->separateList();
-    if (cur->getLList()->size() != 0)
-      left = &(_nodes[cur->leftmedian(buffer)]);
-    else
-      left = NULL;
+
     
     if (cur->getRList()->size() != 0)
       right = &(_nodes[cur->rightmedian(buffer)]);
     else
       right = NULL;
+
+    if (cur->getLList()->size() != 0)
+      left = &(_nodes[cur->leftmedian(buffer)]);
+    else
+      left = NULL;
+    
     cur->setChild(left,right);
     if (left != NULL)
     {
@@ -76,7 +78,7 @@ void* KdTree::construct_thread(Node* job,struct drand48_data* buffer)
     {
       unfinish.push(right);
     }
-  };
+  }
   return NULL;
 }
 
@@ -84,21 +86,22 @@ void KdTree::construct()
 {
   Node* cur;
   Node* left,*right;
-  
   while(_unfinish.size() < _thread_n)
   {
     cur = _unfinish.front();
     _unfinish.pop();
     cur->separateList();
-    if (cur->getLList()->size() != 0)
-      left = &(_nodes[cur->leftmedian()]);
-    else
-      left = NULL;
+
     if (cur->getRList()->size() != 0)
       right = &(_nodes[cur->rightmedian()]);
     else
       right = NULL;
-
+    
+    if (cur->getLList()->size() != 0)
+      left = &(_nodes[cur->leftmedian()]);
+    else
+      left = NULL;
+    
     cur->setChild(left,right);
     
     if (left != NULL)
@@ -339,9 +342,9 @@ void* launchThread(void* arg)
   gettimeofday(&tv, NULL);
   struct drand48_data drand_buffer;  
   srand48_r(tv.tv_sec * myarg->rank + tv.tv_usec, &drand_buffer);
-  cout << "        thread" <<myarg->rank<<endl;
+  //  cout << "        thread" <<myarg->rank<<endl;
   myarg->myTree->construct_thread(myarg->job, &drand_buffer);
-  cout << "        return" << myarg->rank<<endl;
+  //  cout << "        return" << myarg->rank<<endl;
   return NULL;
 }
 
