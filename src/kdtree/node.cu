@@ -94,8 +94,7 @@ void Node::buildRootList(int size)
     _list = new vector<int>;
   else
     _list->clear();
-  
-  _list->reserve(size);    
+  //_list->reserve(size);    
   for (int i = 0; i < size; ++i)
     (*_list).push_back(i);
   setDepth(_idx,0);
@@ -106,12 +105,13 @@ void Node::separateList()
   int dim = getDepth(_idx)%_dim;
   if (_rlist == NULL)
     _rlist = new vector<int>;
+  else _rlist->clear();
+  
   if (_llist == NULL)
     _llist = new vector<int>;
+  else _llist->clear();  
   // _rlist->reserve(_list->size()/2);
   // _llist->reserve(_list->size()/2);
-  _rlist->clear();
-  _llist->clear();  
   for(vector<int>::iterator it = _list->begin(); it != _list->end(); ++it) {
     if (*it != _idx)
     {
@@ -140,17 +140,9 @@ void Node::setDir(int dim,float dir)
 
 bool Node::Less::operator() (const int & a, const int& b)
 {
-  //  assert(a >= 0&& a < myNode->_size);
-  //  assert(b >= 0&& b < myNode->_size);
-  int tb;
-  if (b < 0)
-    tb = 0;
-  else if (b >= myNode->_size)
-    tb = myNode->_size;
-  else
-    tb =b;
-  return (Node::getPos(a,Node::getDepth(myNode->getIdx())%Node::getDim()) < Node::getPos(tb,Node::getDepth(myNode->getIdx())%Node::getDim()));
-  //  return (Node::getPos(a,getDepth(a)%Node::getDim()) < Node::getPos(b,myNode->getDepth()%Node::getDim()));
+  assert(a >= 0&& a < myNode->_size);
+  assert(b >= 0&& b < myNode->_size);
+  return (Node::getPos(a,Node::getDepth(myNode->getIdx())%Node::getDim()) < Node::getPos(b,Node::getDepth(myNode->getIdx())%Node::getDim()));
 } 
 
 
@@ -186,6 +178,7 @@ int Node::median(int sample_sz,vector<int>* list,bool next,struct drand48_data *
   if (list == NULL)
   {
     sample_sz = _size < sample_sz? _size:sample_sz;
+    assert (sample_sz == SAMPLESIZE || sample_sz == _size );
     sample->clear();
     int count = 0;
     while (count < sample_sz)
@@ -216,6 +209,7 @@ int Node::median(int sample_sz,vector<int>* list,bool next,struct drand48_data *
       _depth[_idx]++;
     assert(list->size() != 0);
     sample_sz = list->size() < sample_sz? list->size():sample_sz;
+    assert (sample_sz == SAMPLESIZE || sample_sz == list->size());    
     sample->clear();
     //    sample.reserve(sample_sz);      
     int count = 0;

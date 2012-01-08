@@ -1,6 +1,6 @@
 #ifndef NODE_H_
 #define NODE_H_
-#define NDEBUG
+//#define NDEBUG
 #include <stdlib.h>
 #include <vector>
 #include <algorithm>

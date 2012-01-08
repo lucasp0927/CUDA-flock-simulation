@@ -14,15 +14,15 @@
 
 using namespace std;
 FlockSim *fs;
-int size;
+int flocksize;
 #include "absGL.cpp"
 
 
 int main(int argc, char *argv[])
 {
   assert(argc == 3);
-  size = atoi(argv[1]);
-  cout << "size: " << size << endl;
+  flocksize = atoi(argv[1]);
+  cout << "size: " << flocksize << endl;
   int thread_number = atoi(argv[2]);
   // init wall
   WorldGeo wg(3);
@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
   para.A = 5.0;
   para.S = 4;
   // 
-  fs =  new FlockSim(size,thread_number,wg,para);
+  fs =  new FlockSim(flocksize,thread_number,wg,para);
   fs->initializeGpuData();       // only needed one time
   fs->_kt->randInit();       // only needed one time
   fs->makeTree();

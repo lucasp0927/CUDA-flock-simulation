@@ -352,7 +352,7 @@ void ConstructTree(int thread_n , KdTree* myTree, pthread_t* thread_handles)
   {
     args[i].rank = i;
     args[i].job = myTree->getJob();
-    assert(args[i].job->getIdx() >= 0&&args[i].job->getIdx() <1000);
+    //    assert(args[i].job->getIdx() >= 0&&args[i].job->getIdx() <10000);
     args[i].myTree = myTree;
   }
   int thread;

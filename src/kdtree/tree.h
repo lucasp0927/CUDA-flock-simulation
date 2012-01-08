@@ -1,6 +1,6 @@
 #ifndef TREE_H_
 #define TREE_H_
-#define NDEBUG
+//#define NDEBUG
 #include <stdlib.h>
 #include <vector>
 #include <queue>

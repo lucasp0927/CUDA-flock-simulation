@@ -23,7 +23,7 @@ int timeo,timen,frame,fps;
 
 
 extern FlockSim *fs;
-extern int size;
+extern int flocksize;
 
 float Border[6];
 
@@ -71,7 +71,7 @@ void idle(){
 /*
   void updateposition(){
   int i;
-  for(i=0;i<size;i++){
+  for(i=0;i<flocksize;i++){
   position[i*2]=bird[i].X();
   position[i*2+1]=bird[i].X();
   }
@@ -191,7 +191,7 @@ void display() {
   glEnableClientState(GL_VERTEX_ARRAY);
   glVertexPointer(3,GL_FLOAT,0,Vertices);
   
-  for(int i=0;i<size;i++){
+  for(int i=0;i<flocksize;i++){
     glPushMatrix();
     glTranslated(2*fs->getPos(i,0)/Ratio,2*fs->getPos(i,1)/Ratio,2*fs->getPos(i,2)/Ratio);
     if(i==1)   { 
@@ -250,7 +250,7 @@ void mouseM(int x,int y){
   }
 }
 
-// cudaMalloc((void**)&d_a, sizeof(h_a));
+// cudaMalloc((void**)&d_a, flocksizeof(h_a));
 // do_cuda<<<20,32>>>(d_a);
 // cudaMemcpy(h_a, d_a, sizeof(h_a), cudaMemcpyDeviceToHost);
 
