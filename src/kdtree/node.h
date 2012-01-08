@@ -19,12 +19,6 @@ struct tuplet
   float pos;
 };
 
-  
-struct Less {
-Less(int ax) : _ax(ax) {}
-  bool operator () ( int  a,int  b );
-  int _ax;
-};
 class Node
 {
 

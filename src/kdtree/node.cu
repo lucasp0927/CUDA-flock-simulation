@@ -143,19 +143,6 @@ void Node::setDir(int dim,float dir)
   _xyz_dir[_idx*_psize+dim] = dir;  
 }
 
-
-bool Less::operator() (int  a, int b)
-{
-  //  cout << a << " " << b << endl;
-  assert(a >= 0&& a < Node::_size);
-  assert(b >= 0&& b < Node::_size);
-  //return  (a<b);
-  assert(_ax >=0 && _ax < 3);
-  return (Node::getPos(a,_ax) < Node::getPos(b,_ax));
-} 
-
-
-
 int compare (const void* a,const void* b)
 {
   return(((tuplet*)a)->pos - ((tuplet*)b)->pos);

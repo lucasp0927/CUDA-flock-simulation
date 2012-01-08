@@ -23,7 +23,7 @@ FlockSim::FlockSim(int size, int thread_n,WorldGeo& wg,Para para):_size(size),_t
   _ang_dir = (float*) malloc(_size*3*sizeof(float));
 
   // cuda grid sructure
-  Block_Dim_x = 128;
+  Block_Dim_x = 512;
   Block_Dim_y = 1;  
   Grid_Dim_x = (int)_size/Block_Dim_x +1;
   if (Grid_Dim_x > 65565)
@@ -104,22 +104,6 @@ __constant__ int root;          // need to update
 __constant__ int* isend;
 
 
-__global__  void convertDir()
-{
-  int num = threadIdx.x + blockDim.x * blockIdx.x;
-  if (num < size)
-  {
-    float r = 0.0;
-    for (int i = 0; i < 3; ++i)
-    {
-      r += xyz_dir[num*3+i]*xyz_dir[num*3+i];
-    }
-    r = sqrt(r);
-    ang_dir[num*3] = -180.0*acos(xyz_dir[num*3]/r)/M_PI;    
-    ang_dir[num*3+1] = xyz_dir[num*3+2];
-    ang_dir[num*3+2] = -1.0*xyz_dir[num*3+1];    
-  }
-}
 
 
 __device__ float3 operator+(const float3 &a, const float3 &b) {
@@ -363,6 +347,19 @@ __global__ void initIsend()
   }
   __syncthreads();
 }
+__global__  void convertDir()
+{
+  int num = threadIdx.x + blockDim.x * blockIdx.x;
+  if (num < size)
+  {
+    float3 d = getDir(num);
+    float r = sqrtf(dot(d,d));      
+    ang_dir[num*3] = -180.0*acos(xyz_dir[num*3]/r)/M_PI;    
+    ang_dir[num*3+1] = xyz_dir[num*3+2];
+    ang_dir[num*3+2] = -1.0*xyz_dir[num*3+1];    
+  }
+}
+
 
 __global__ void flockUpdate()
 {
@@ -427,7 +424,7 @@ __global__ void flockUpdate()
     setDir(num,tmpv); 
   }
   
-  __syncthreads();
+  //  __syncthreads();
 }
 
 void FlockSim::update()

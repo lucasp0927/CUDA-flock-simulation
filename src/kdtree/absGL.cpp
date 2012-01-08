@@ -211,8 +211,6 @@ void display() {
   fs->cpytree2dev();
   fs->update();
   fs->cpy2host();
-  //  fs->_kt->randInit();    
-  fs->_kt->clearTree();
 }
 
 void reshape(int w,int h){
@@ -225,8 +223,6 @@ void reshape(int w,int h){
   //     glTranslated(0,0,-10);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
-
-
 }
 
 
