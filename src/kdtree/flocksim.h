@@ -14,6 +14,7 @@ using namespace std;
 typedef struct
 {
   float R,r,dt,C,A,S;
+  int sepmode;
   /* put other parameters here */
 }Para;
 

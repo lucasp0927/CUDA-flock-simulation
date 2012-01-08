@@ -1,5 +1,7 @@
 #include "flocksim.h"
 
+//extern int sepmode;
+
 FlockSim::FlockSim(int size, int thread_n,WorldGeo& wg,Para para):_size(size),_thread_n(thread_n),_wg(wg)
 {
   _thread_handles = (pthread_t*)malloc(_thread_n*sizeof(pthread_t));
@@ -397,7 +399,9 @@ __global__ void flockUpdate()
     // avg.rvel average velocity within r    
     // above variable are float3.
     // wall[0~5]
-    tmpv=normalize(tmpv);
+    if(para.sepmode==1){
+         tmpv=normalize(tmpv);
+    }
     if (avg.countR>0)
     {
 //	tmpv=normalize(avg.Rpos-tmp);
@@ -411,12 +415,15 @@ __global__ void flockUpdate()
     if (avg.countr>0){
  //     tmpv = normalize(avg.rpos)*para.S;
      // tmpv
-     tmpv =/* normalize(tmpv + */normalize(avg.rpos)*para.S;
+        tmpv =/* normalize(tmpv + */normalize(avg.rpos)*para.S;
       //tmpv = tmpv+normalize(make_float3(1,0,0))*para.S;
       //tmpv = normalize(tmpv);
 	
     }
-
+    
+    }
+    else if(para.sepmode!=1){
+        tmpv=(tmpv+normalize(tmpv))/2;
     }
     wallCheck(num,tmp,tmpv);
     tmp = tmp+(tmpv*para.dt);
