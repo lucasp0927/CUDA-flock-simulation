@@ -286,8 +286,13 @@ __device__ bool move(int &cur,int &num)
 // normalize
 inline __host__ __device__ float3 normalize(float3 v)
 {
-    float invLen = 1.0f / sqrtf(dot(v, v));
-    return v * invLen;
+    float invLen;
+    float ma=sqrtf(dot(v,v));
+    if(ma!=0){
+        invLen=1.0f / ma;
+        return v * invLen;
+    }
+    return make_float3(0,0,0);
 }
 // __device__ float3 normalize(float3 a)
 // {
