@@ -112,12 +112,14 @@ void Node::separateList()
   else _llist->clear();  
   // _rlist->reserve(_list->size()/2);
   // _llist->reserve(_list->size()/2);
+  assert(dim >= 0 && dim < 3);
   float piv = getPos(_idx,dim);
   for(vector<int>::iterator it = _list->begin(); it != _list->end(); ++it) {
     if (*it != _idx)
     {
       assert(*it >= 0 && *it < _size);
-      assert(_idx >= 0 && _idx < _size);      
+      assert(_idx >= 0 && _idx < _size);
+      assert(dim >= 0 && dim < 3);
       if (getPos(*it,dim) > piv)
         _rlist->push_back(*it);
       else
@@ -142,9 +144,11 @@ void Node::setDir(int dim,float dir)
 
 bool Less::operator() (int  a, int b)
 {
-  cout << a << " " << b << endl;
+  //  cout << a << " " << b << endl;
   assert(a >= 0&& a < Node::_size);
   assert(b >= 0&& b < Node::_size);
+  //return  (a<b);
+  assert(_ax >=0 && _ax < 3);
   return (Node::getPos(a,_ax) < Node::getPos(b,_ax));
 } 
 
@@ -175,15 +179,15 @@ int Node::median(int sample_sz,vector<int>* list,bool next,struct drand48_data *
 {
   double randnum;
   //  vector<int> sample;
-  vector<int>* sample;
-  sample = new vector<int>;
+  vector<int> sample;
+  //  sample = new vector<int>;
   int tmp;
   //  cerr << list->size();
   if (list == NULL)
   {
     sample_sz = _size < sample_sz? _size:sample_sz;
     assert (sample_sz == SAMPLESIZE || sample_sz == _size );
-    sample->clear();
+    sample.clear();
     for (int i = 0; i < sample_sz; ++i)
     {
       if (buffer == NULL)
@@ -197,10 +201,13 @@ int Node::median(int sample_sz,vector<int>* list,bool next,struct drand48_data *
       // if (tmp >= _size)
       //   tmp = _size-1;
       assert(tmp >=0 && tmp < _size);
-      sample->push_back(tmp);
+      sample.push_back(tmp);
     }
-    assert(sample->size() == sample_sz);    
-    sort(sample->begin(),sample->end(),Less(getDepth(_idx)%getDim() ));        
+    assert(sample.size() == sample_sz);
+    assert(getDepth(_idx) >= 0);
+    int ax = getDepth(_idx)%getDim();
+    assert(ax >= 0 && ax < 3);
+    sort(sample.begin(),sample.end(),Less(ax));        
     //quick_sort (sample, sample_sz,getDepth(_idx));
   }
   else
@@ -210,7 +217,7 @@ int Node::median(int sample_sz,vector<int>* list,bool next,struct drand48_data *
     assert(list->size() != 0);
     sample_sz = list->size() < sample_sz? list->size():sample_sz;
     assert (sample_sz == SAMPLESIZE || sample_sz == list->size());    
-    sample->clear();
+    sample.clear();
     //    sample.reserve(sample_sz);
     for (int i = 0; i < sample_sz; ++i)
     {
@@ -226,24 +233,26 @@ int Node::median(int sample_sz,vector<int>* list,bool next,struct drand48_data *
       //   tmp = list->size()-1;
       tmp = (*list)[tmp];
       assert(tmp >= 0 && tmp < _size);      
-      sample->push_back(tmp);
+      sample.push_back(tmp);
     }
-    assert(sample->size() == sample_sz);
+    assert(sample.size() == sample_sz);
     
-    vector<int>::iterator it;
-    cout << "sample contains:";
-    for (it=sample->begin(); it!=sample->end(); ++it)
-      cout << " " << *it;
-    cout << endl;
-    
-    sort(sample->begin(),sample->end(),Less(getDepth(_idx)%getDim() ));    
+    // vector<int>::iterator it;
+    // cout << "sample contains:";
+    // for (it=sample.begin(); it!=sample.end(); ++it)
+    //   cout << " " << *it;
+    // cout << endl;
+    assert(getDepth(_idx) >= 0);    
+    int ax = getDepth(_idx)%getDim();
+    assert(ax >= 0 && ax < 3);    
+    sort(sample.begin(),sample.end(),Less(ax));    
 //quick_sort (sample, sample_sz,getDepth(_idx));          
     if(next)
       _depth[_idx]--;
   }
   
-  int result = (*sample)[sample_sz/2];    
-  delete sample;
+  int result = sample[sample_sz/2];    
+  //  delete sample;
   return result;  
 }
 
@@ -309,7 +318,7 @@ float Node::distance(int idx)
   float tmp;
   for (int i = 0; i < _dim; ++i)
   {
-    tmp = getPos(idx,i) - getPos(_idx,i);
+    tmp = getPos(idx,i%3 ) - getPos(_idx,i%3 );
     d += tmp*tmp;
   }
   d = sqrt(d);
@@ -343,7 +352,7 @@ ostream &operator <<(ostream &os,Node& n)
   os << setw(3) << n.getIdx();
   for (int i = 0; i < Node::getDim(); ++i)
   {
-    os << setw(10) << n.getPos(n.getIdx(),i);
+    os << setw(10) << n.getPos(n.getIdx(),i%3 );
   }
   os << setw(5) << "p:" << setw(5) << n.getParent();
   os << setw(5) << "l:" << setw(5) << n.getLChild();

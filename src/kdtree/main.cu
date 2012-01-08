@@ -39,9 +39,16 @@ int main(int argc, char *argv[])
   // 
   fs =  new FlockSim(flocksize,thread_number,wg,para);
   fs->initializeGpuData();       // only needed one time
-  fs->_kt->randInit();       // only needed one time
+  fs->_kt->clearTree();
+  while (true)
+  {
   fs->makeTree();
-  mainGL(argc,argv,ws);
+  fs->cpytree2dev();
+  fs->update();
+  fs->cpy2host();
+  fs->_kt->clearTree();
+  }
+  //  mainGL(argc,argv,ws);
 
 
   // while(true)

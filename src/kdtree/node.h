@@ -47,6 +47,7 @@ class Node
   void separateList();
   static float getPos(int idx,int dim)  {
     assert(idx >= 0 && idx < _size);
+    assert(dim >=0 && dim < 3);
     return _pos[idx*_psize+dim];  }
   static float getDir(int idx,int dim)  {
     assert(idx >= 0 && idx < _size);

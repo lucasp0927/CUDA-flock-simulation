@@ -223,6 +223,7 @@ int KdTree::goDown(int& cur,int& d,float& dis)
   while (!_nodes[cur].isEnd())
   {
     ax = Node::getDepth(cur)%_dim;
+    assert(ax >= 0 && ax < 3);
     assert(d>= 0 && d < _size);
     assert(cur>= 0 && cur < _size);                    
     if (Node::getPos(d,ax) > Node::getPos(cur,ax))
@@ -253,6 +254,7 @@ bool KdTree::move(int& cur , int& d,float& dis)
   assert(d>= 0 && d < _size);                
   int parent = _nodes[cur].getParent();
   int ax = Node::getDepth(parent)%_dim;
+  assert(ax >= 0 && ax < 3);
   float d_ax = Node::getPos(d,ax);
   assert(parent>= 0 && parent < _size);                  
   float curp_ax = Node::getPos(parent,ax);
@@ -331,7 +333,10 @@ void KdTree::depthArray(int* arr)
 void KdTree::clearTree()
 {
   for (int i = 0; i < _size; ++i)
+  {
     _nodes[i].clear();
+    Node::setDepth(i,0);
+  }
 }
 
 void* launchThread(void* arg)
