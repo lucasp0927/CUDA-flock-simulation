@@ -1,5 +1,5 @@
 # NVCC is path to nvcc. Here it is assumed that /usr/local/cuda is on one's PATH.
-NVCC = /usr/local/cuda/bin/nvcc
+NVCC = nvcc
 GXX = g++
 CUDAPATH = /usr/lib
 

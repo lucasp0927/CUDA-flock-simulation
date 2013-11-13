@@ -47,21 +47,33 @@ FlockSim::~FlockSim()
   delete [] _depth;
 }
 
+__constant__ Para para;
+__constant__ float* pos;
+__constant__ float* xyz_dir;
+__constant__ float* ang_dir;
+__constant__ int* tree;
+__constant__ int* depth;
+__constant__ int size;
+__constant__ int psize;
+__constant__ float* wall;
+__constant__ int root;          // need to update
+__constant__ int* isend;
+
 void FlockSim::initializeGpuData()
 {
   cudaMemcpy(_dev_pos, _pos, _size*_psize*sizeof(float),cudaMemcpyHostToDevice);
   cudaMemcpy(_dev_xyz_dir, _xyz_dir, _size*3*sizeof(float),cudaMemcpyHostToDevice);
   cudaMemcpy(_dev_wall, _wg._wall , 6*sizeof(float),cudaMemcpyHostToDevice);  
-  cudaMemcpyToSymbol("para", &_para, sizeof(Para), size_t(0),cudaMemcpyHostToDevice);
-  cudaMemcpyToSymbol("pos", &_dev_pos, sizeof(float*), size_t(0),cudaMemcpyHostToDevice);
-  cudaMemcpyToSymbol("xyz_dir", &_dev_xyz_dir, sizeof(float*), size_t(0),cudaMemcpyHostToDevice);
-  cudaMemcpyToSymbol("ang_dir", &_dev_ang_dir, sizeof(float*), size_t(0),cudaMemcpyHostToDevice);    
-  cudaMemcpyToSymbol("tree", &_dev_tree, sizeof(int*), size_t(0),cudaMemcpyHostToDevice);
-  cudaMemcpyToSymbol("depth", &_dev_depth, sizeof(int*), size_t(0),cudaMemcpyHostToDevice);
-  cudaMemcpyToSymbol("size", &_size, sizeof(int), size_t(0),cudaMemcpyHostToDevice);
-  cudaMemcpyToSymbol("psize", &_psize, sizeof(int), size_t(0),cudaMemcpyHostToDevice);
-  cudaMemcpyToSymbol("wall", &(_dev_wall), sizeof(float*), size_t(0),cudaMemcpyHostToDevice);
-  cudaMemcpyToSymbol("isend", &_dev_isend, sizeof(int*), size_t(0),cudaMemcpyHostToDevice);  
+  cudaMemcpyToSymbol(para, &_para, sizeof(Para), size_t(0),cudaMemcpyHostToDevice);
+  cudaMemcpyToSymbol(pos, &_dev_pos, sizeof(float*), size_t(0),cudaMemcpyHostToDevice);
+  cudaMemcpyToSymbol(xyz_dir, &_dev_xyz_dir, sizeof(float*), size_t(0),cudaMemcpyHostToDevice);
+  cudaMemcpyToSymbol(ang_dir, &_dev_ang_dir, sizeof(float*), size_t(0),cudaMemcpyHostToDevice);    
+  cudaMemcpyToSymbol(tree, &_dev_tree, sizeof(int*), size_t(0),cudaMemcpyHostToDevice);
+  cudaMemcpyToSymbol(depth, &_dev_depth, sizeof(int*), size_t(0),cudaMemcpyHostToDevice);
+  cudaMemcpyToSymbol(size, &_size, sizeof(int), size_t(0),cudaMemcpyHostToDevice);
+  cudaMemcpyToSymbol(psize, &_psize, sizeof(int), size_t(0),cudaMemcpyHostToDevice);
+  cudaMemcpyToSymbol(wall, &(_dev_wall), sizeof(float*), size_t(0),cudaMemcpyHostToDevice);
+  cudaMemcpyToSymbol(isend, &_dev_isend, sizeof(int*), size_t(0),cudaMemcpyHostToDevice);  
 }
 
 void FlockSim::cpytree2dev()
@@ -93,17 +105,6 @@ void FlockSim::makeTree()
   _root = _kt->getRoot();
 }
 
-__constant__ Para para;
-__constant__ float* pos;
-__constant__ float* xyz_dir;
-__constant__ float* ang_dir;
-__constant__ int* tree;
-__constant__ int* depth;
-__constant__ int size;
-__constant__ int psize;
-__constant__ float* wall;
-__constant__ int root;          // need to update
-__constant__ int* isend;
 
 
 
